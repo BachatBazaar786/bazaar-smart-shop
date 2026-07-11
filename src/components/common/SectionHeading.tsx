@@ -25,12 +25,10 @@ export function SectionHeading({
   );
 }
 
-export function ViewAll({ to, params, label = "View all" }: { to: string; params?: Record<string, string>; label?: string }) {
+export function ViewAll({ to = "/shop", label = "View all" }: { to?: string; label?: string }) {
   return (
     <Link
-      // @ts-expect-error - dynamic link
       to={to}
-      params={params}
       className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark"
     >
       {label} <ChevronRight className="h-4 w-4" />
