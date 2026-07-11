@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { products, getRelated } from "@/data/products";
+import { products, relatedProducts } from "@/data/products";
 import { categories } from "@/data/categories";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Price } from "@/components/product/Price";
@@ -56,7 +56,7 @@ function ProductPage() {
   const wishlist = useWishlist();
   const recent = useRecentlyViewed();
   const category = categories.find((c) => c.slug === product.categorySlug);
-  const related = getRelated(product);
+  const related = relatedProducts(product.slug);
   const inWishlist = wishlist.has(product.id);
 
   useEffect(() => { recent.add(product); }, [product.id]);
@@ -75,14 +75,13 @@ function ProductPage() {
       ]} />
 
       <div className="grid lg:grid-cols-2 gap-10 mt-6">
-        {/* Gallery */}
         <div>
           <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border">
             <img src={product.images[activeImage]} alt={product.name} className="h-full w-full object-cover" />
           </div>
           {product.images.length > 1 && (
             <div className="mt-3 grid grid-cols-5 gap-2">
-              {product.images.map((img, i) => (
+              {product.images.map((img: string, i: number) => (
                 <button key={i} onClick={() => setActiveImage(i)} className={`aspect-square rounded-md overflow-hidden border-2 ${i === activeImage ? "border-primary" : "border-transparent"}`}>
                   <img src={img} alt="" className="h-full w-full object-cover" />
                 </button>
@@ -91,7 +90,6 @@ function ProductPage() {
           )}
         </div>
 
-        {/* Info */}
         <div>
           {category && <Link to="/category/$slug" params={{ slug: category.slug }} className="text-xs uppercase tracking-wide text-primary font-semibold">{category.name}</Link>}
           <h1 className="mt-1 font-display text-3xl md:text-4xl font-bold text-foreground">{product.name}</h1>
@@ -102,9 +100,9 @@ function ProductPage() {
           <div className="mt-5"><Price price={product.price} salePrice={product.salePrice} size="lg" /></div>
           <p className="mt-4 text-muted-foreground">{product.shortDescription}</p>
 
-          {product.benefits && product.benefits.length > 0 && (
+          {product.benefits.length > 0 && (
             <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {product.benefits.map((b) => (
+              {product.benefits.map((b: string) => (
                 <li key={b} className="flex items-start gap-2 text-sm">
                   <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                   <span>{b}</span>
@@ -149,53 +147,31 @@ function ProductPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="mt-14">
         <Tabs defaultValue="description">
           <TabsList>
             <TabsTrigger value="description">Description</TabsTrigger>
             <TabsTrigger value="specs">Specifications</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews ({product.reviewCount})</TabsTrigger>
+            <TabsTrigger value="usage">How to use</TabsTrigger>
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
-          <TabsContent value="description" className="prose max-w-none text-muted-foreground">
+          <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
             <p className="whitespace-pre-line">{product.description}</p>
           </TabsContent>
           <TabsContent value="specs">
-            <dl className="divide-y divide-border border border-border rounded-lg overflow-hidden">
-              {Object.entries(product.specs ?? {}).map(([k, v]) => (
-                <div key={k} className="grid grid-cols-3 py-3 px-4 text-sm">
-                  <dt className="font-medium">{k}</dt>
-                  <dd className="col-span-2 text-muted-foreground">{v}</dd>
+            <dl className="divide-y divide-border border border-border rounded-lg overflow-hidden max-w-2xl">
+              {product.specifications.map((s: { label: string; value: string }) => (
+                <div key={s.label} className="grid grid-cols-3 py-3 px-4 text-sm">
+                  <dt className="font-medium">{s.label}</dt>
+                  <dd className="col-span-2 text-muted-foreground">{s.value}</dd>
                 </div>
               ))}
             </dl>
           </TabsContent>
-          <TabsContent value="reviews">
-            <div className="grid md:grid-cols-[auto_1fr] gap-8">
-              <div className="text-center">
-                <div className="font-display text-5xl font-bold">{product.rating.toFixed(1)}</div>
-                <Rating value={product.rating} />
-                <div className="text-xs text-muted-foreground mt-1">{product.reviewCount} reviews</div>
-              </div>
-              <div className="space-y-4">
-                {(product.reviews ?? []).map((r) => (
-                  <div key={r.id} className="border border-border rounded-lg p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="font-semibold">{r.author}</div>
-                      <Rating value={r.rating} />
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{r.date}</div>
-                    <p className="mt-2 text-sm">{r.body}</p>
-                  </div>
-                ))}
-                {(!product.reviews || product.reviews.length === 0) && (
-                  <p className="text-sm text-muted-foreground">No reviews yet. Be the first to review this product.</p>
-                )}
-              </div>
-            </div>
+          <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
+            <p>{product.usage}</p>
           </TabsContent>
-          <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3">
+          <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
             <p><strong className="text-foreground">Delivery:</strong> We deliver across Pakistan within 2–5 working days depending on your city. Same-day delivery available in select areas of Karachi, Lahore and Islamabad.</p>
             <p><strong className="text-foreground">Returns:</strong> 7-day easy returns on unopened items. Perishable and food items are non-returnable once opened.</p>
             <p><strong className="text-foreground">Payment:</strong> Cash on Delivery, JazzCash, EasyPaisa and bank transfer accepted.</p>
