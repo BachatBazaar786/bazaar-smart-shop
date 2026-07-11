@@ -126,7 +126,7 @@ function ProductPage() {
             <Button onClick={addToCart} disabled={product.stock === 0} size="lg" className="gap-2 bg-primary hover:bg-primary-dark">
               <ShoppingBag className="h-4 w-4" /> Add to cart
             </Button>
-            <Button variant="outline" size="lg" onClick={() => wishlist.toggle(product)} className="gap-2">
+            <Button variant="outline" size="lg" onClick={() => wishlist.toggle(product.id)} className="gap-2">
               <Heart className={`h-4 w-4 ${inWishlist ? "fill-savings text-savings" : ""}`} />
               {inWishlist ? "Saved" : "Wishlist"}
             </Button>
