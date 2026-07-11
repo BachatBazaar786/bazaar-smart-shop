@@ -59,10 +59,10 @@ function ProductPage() {
   const related = relatedProducts(product.slug);
   const inWishlist = wishlist.has(product.id);
 
-  useEffect(() => { recent.add(product); }, [product.id]);
+  useEffect(() => { recent.add(product.id); }, [product.id]);
 
   const addToCart = () => {
-    cart.add(product, qty);
+    cart.add(product.id, qty);
     toast.success(`Added ${qty} × ${product.name} to cart`);
   };
 
