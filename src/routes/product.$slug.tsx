@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { products, relatedProducts } from "@/data/products";
+import { toListItems } from "@/lib/product-adapter";
 import { categories } from "@/data/categories";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Price } from "@/components/product/Price";
@@ -182,7 +183,7 @@ function ProductPage() {
       {related.length > 0 && (
         <div className="mt-16">
           <SectionHeading eyebrow="You may also like" title="Related products" />
-          <ProductGrid products={related} />
+          <ProductGrid products={toListItems(related)} />
         </div>
       )}
     </div>

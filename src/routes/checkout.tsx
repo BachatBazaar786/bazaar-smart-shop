@@ -23,7 +23,7 @@ function CheckoutPage() {
   const shipping = cart.subtotal > 3000 || cart.subtotal === 0 ? 0 : 250;
   const total = cart.subtotal + shipping;
 
-  if (cart.detailed.length === 0) {
+  if (cart.items.length === 0) {
     return (
       <div className="container-page py-16 text-center">
         <h1 className="font-display text-3xl font-bold">Your cart is empty</h1>
@@ -47,7 +47,7 @@ function CheckoutPage() {
       name: form.get("name"),
       email: form.get("email"),
       city: form.get("city"),
-      items: cart.detailed.map((i) => ({ name: i.product.name, quantity: i.quantity, price: i.product.salePrice ?? i.product.price })),
+      items: cart.items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.salePrice ?? i.price })),
     };
     try {
       localStorage.setItem("bab_last_order", JSON.stringify(summary));
@@ -108,14 +108,14 @@ function CheckoutPage() {
         <aside className="rounded-lg border border-border bg-card p-6 sticky top-24">
           <h2 className="font-display text-lg font-bold">Order summary</h2>
           <ul className="mt-4 divide-y divide-border">
-            {cart.detailed.map((i) => (
-              <li key={i.productId} className="py-3 flex gap-3 items-center">
-                <div className="h-14 w-14 shrink-0 rounded-md overflow-hidden bg-muted"><img src={i.product.images[0]} alt="" className="h-full w-full object-cover" /></div>
+            {cart.items.map((i) => (
+              <li key={i.id} className="py-3 flex gap-3 items-center">
+                <div className="h-14 w-14 shrink-0 rounded-md overflow-hidden bg-muted"><img src={i.image} alt="" className="h-full w-full object-cover" /></div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium line-clamp-1">{i.product.name}</div>
+                  <div className="text-sm font-medium line-clamp-1">{i.name}</div>
                   <div className="text-xs text-muted-foreground">Qty {i.quantity}</div>
                 </div>
-                <div className="text-sm font-medium">{formatPKR((i.product.salePrice ?? i.product.price) * i.quantity)}</div>
+                <div className="text-sm font-medium">{formatPKR((i.salePrice ?? i.price) * i.quantity)}</div>
               </li>
             ))}
           </ul>

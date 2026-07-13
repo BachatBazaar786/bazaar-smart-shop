@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { categories } from "@/data/categories";
 import { products } from "@/data/products";
+import { toListItems } from "@/lib/product-adapter";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { SectionHeading } from "@/components/common/SectionHeading";
@@ -58,7 +59,7 @@ function CategoryPage() {
       <div className="container-page py-10">
         <SectionHeading title={`${items.length} product${items.length !== 1 ? "s" : ""} in ${category.name}`} />
         {items.length > 0 ? (
-          <ProductGrid products={items} />
+          <ProductGrid products={toListItems(items)} />
         ) : (
           <div className="rounded-lg border border-dashed border-border p-12 text-center">
             <h3 className="font-display text-xl font-semibold">Coming soon</h3>

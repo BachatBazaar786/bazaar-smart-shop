@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Leaf, ShieldCheck, Sparkles, Truck, Headphones, Package, Mountain } from "lucide-react";
 import { categories } from "@/data/categories";
 import { bestSellers, dealsProducts, featured, newArrivals, products } from "@/data/products";
+import { toListItems, toListItem } from "@/lib/product-adapter";
 import { CategoryCard } from "@/components/common/CategoryCard";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading, ViewAll } from "@/components/common/SectionHeading";
@@ -87,7 +88,7 @@ function Home() {
       {/* Featured */}
       <section className="container-page py-8 md:py-12">
         <SectionHeading eyebrow="Handpicked" title="Featured products" description="Our current favourites — trusted quality at smart prices." action={<ViewAll to="/shop" />} />
-        <ProductGrid products={featured()} />
+        <ProductGrid products={toListItems(featured())} />
       </section>
 
       {/* Promo banner */}
@@ -133,7 +134,7 @@ function Home() {
       {/* Best sellers */}
       <section className="container-page py-8 md:py-12">
         <SectionHeading eyebrow="Customers love" title="Best sellers" action={<ViewAll to="/shop" />} />
-        <ProductGrid products={bestSellers()} />
+        <ProductGrid products={toListItems(bestSellers())} />
       </section>
 
       {/* Brand story */}
@@ -154,14 +155,14 @@ function Home() {
       {/* New arrivals */}
       <section className="container-page py-12 md:py-16">
         <SectionHeading eyebrow="Fresh in" title="New arrivals" action={<ViewAll to="/shop" />} />
-        <ProductGrid products={newArrivals().length ? newArrivals() : products.slice(0, 4)} />
+        <ProductGrid products={toListItems(newArrivals().length ? newArrivals() : products.slice(0, 4))} />
       </section>
 
       {/* Deals */}
       <section className="container-page pb-12 md:pb-16">
         <div className="rounded-xl border border-savings/30 bg-gradient-to-br from-savings/10 via-background to-background p-6 md:p-8">
           <SectionHeading eyebrow="Savings" title="Today's smart deals" description="Handpicked discounts on the products we love — while stocks last." action={<ViewAll to="/shop" label="See all deals" />} />
-          <ProductGrid products={dealsProducts()} />
+          <ProductGrid products={toListItems(dealsProducts())} />
         </div>
       </section>
 
@@ -181,7 +182,7 @@ function Home() {
       {recent.items.length > 0 && (
         <section className="container-page pb-16">
           <SectionHeading eyebrow="Just for you" title="Recently viewed" />
-          <ProductGrid products={recent.items} />
+          <ProductGrid products={recent.items.map(toListItem)} />
         </section>
       )}
     </div>

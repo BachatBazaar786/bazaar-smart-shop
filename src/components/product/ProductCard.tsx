@@ -1,23 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, ShoppingBag } from "lucide-react";
-import type { Product } from "@/data/products";
+import type { ProductListItem } from "@/types/catalog";
 import { Price, discountPct } from "./Price";
 import { Rating } from "./Rating";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: ProductListItem }) {
   const cart = useCart();
   const wishlist = useWishlist();
-  const pct = discountPct(product.price, product.salePrice);
+  const pct = discountPct(product.price, product.salePrice ?? undefined);
   const inWishlist = wishlist.has(product.id);
 
   return (
     <div className="group relative flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
       <Link to="/product/$slug" params={{ slug: product.slug }} className="relative block aspect-square overflow-hidden bg-muted">
         <img
-          src={product.images[0]}
+          src={product.image}
           alt={product.name}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -43,7 +43,14 @@ export function ProductCard({ product }: { product: Product }) {
           type="button"
           onClick={(e) => {
             e.preventDefault();
-            wishlist.toggle(product.id);
+            wishlist.toggle({
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+              image: product.image,
+              price: product.price,
+              salePrice: product.salePrice,
+            });
             toast(inWishlist ? "Removed from wishlist" : "Added to wishlist");
           }}
           aria-label="Toggle wishlist"
@@ -53,13 +60,15 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
-        <Link
-          to="/category/$slug"
-          params={{ slug: product.categorySlug }}
-          className="text-[11px] uppercase tracking-wide text-muted-foreground hover:text-primary"
-        >
-          {product.category}
-        </Link>
+        {product.category && (
+          <Link
+            to="/category/$slug"
+            params={{ slug: product.category.slug }}
+            className="text-[11px] uppercase tracking-wide text-muted-foreground hover:text-primary"
+          >
+            {product.category.name}
+          </Link>
+        )}
         <Link to="/product/$slug" params={{ slug: product.slug }} className="block">
           <h3 className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-primary transition-colors min-h-10">
             {product.name}
@@ -67,20 +76,29 @@ export function ProductCard({ product }: { product: Product }) {
         </Link>
         <Rating value={product.rating} count={product.reviewCount} />
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
-          <Price price={product.price} salePrice={product.salePrice} />
+          <Price price={product.price} salePrice={product.salePrice ?? undefined} />
         </div>
         <button
           type="button"
+          disabled={product.stock <= 0}
           onClick={() => {
-            cart.add(product.id);
+            cart.add({
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+              image: product.image,
+              price: product.price,
+              salePrice: product.salePrice,
+              stock: product.stock,
+            });
             toast.success("Added to cart");
           }}
-          className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-dark transition-colors"
+          className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-dark transition-colors disabled:opacity-50"
         >
           <ShoppingBag className="h-4 w-4" />
-          Add to Cart
+          {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
         </button>
-        {product.stock < 15 && (
+        {product.stock > 0 && product.stock < 15 && (
           <div className="text-[11px] text-savings-foreground/80">Only {product.stock} left in stock</div>
         )}
       </div>
