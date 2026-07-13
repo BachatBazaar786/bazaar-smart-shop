@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { products } from "@/data/products";
+import { toListItems } from "@/lib/product-adapter";
 import { categories } from "@/data/categories";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
@@ -179,7 +180,7 @@ function Shop() {
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-8">
         <aside className="hidden lg:block">{Filters}</aside>
-        <div><ProductGrid products={filtered} /></div>
+        <div><ProductGrid products={toListItems(filtered)} /></div>
       </div>
     </div>
   );
