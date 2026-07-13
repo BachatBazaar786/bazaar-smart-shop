@@ -1,15 +1,14 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { products, type Product } from "@/data/products";
+import type { CartSnapshot } from "@/types/catalog";
 
-export type CartItem = { productId: string; quantity: number };
+export type CartItem = CartSnapshot & { quantity: number };
 
 type CartContextValue = {
   items: CartItem[];
-  detailed: (CartItem & { product: Product })[];
   count: number;
   subtotal: number;
-  add: (productId: string, qty?: number) => void;
+  add: (snapshot: CartSnapshot, qty?: number) => void;
   remove: (productId: string) => void;
   setQty: (productId: string, qty: number) => void;
   clear: () => void;
@@ -18,41 +17,34 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useLocalStorage<CartItem[]>("bab_cart", []);
+  const [items, setItems] = useLocalStorage<CartItem[]>("bab_cart_v2", []);
 
   const value = useMemo<CartContextValue>(() => {
-    const detailed = items
-      .map((i) => {
-        const p = products.find((pr) => pr.id === i.productId);
-        return p ? { ...i, product: p } : null;
-      })
-      .filter(Boolean) as (CartItem & { product: Product })[];
-
-    const subtotal = detailed.reduce(
-      (s, i) => s + (i.product.salePrice ?? i.product.price) * i.quantity,
+    const subtotal = items.reduce(
+      (s, i) => s + (i.salePrice ?? i.price) * i.quantity,
       0,
     );
-
     return {
       items,
-      detailed,
       count: items.reduce((s, i) => s + i.quantity, 0),
       subtotal,
-      add: (productId, qty = 1) =>
+      add: (snap, qty = 1) =>
         setItems((prev) => {
-          const existing = prev.find((i) => i.productId === productId);
+          const existing = prev.find((i) => i.id === snap.id);
           if (existing)
             return prev.map((i) =>
-              i.productId === productId ? { ...i, quantity: i.quantity + qty } : i,
+              i.id === snap.id
+                ? { ...i, ...snap, quantity: i.quantity + qty }
+                : i,
             );
-          return [...prev, { productId, quantity: qty }];
+          return [...prev, { ...snap, quantity: qty }];
         }),
-      remove: (productId) => setItems((prev) => prev.filter((i) => i.productId !== productId)),
-      setQty: (productId, qty) =>
+      remove: (id) => setItems((prev) => prev.filter((i) => i.id !== id)),
+      setQty: (id, qty) =>
         setItems((prev) =>
           qty <= 0
-            ? prev.filter((i) => i.productId !== productId)
-            : prev.map((i) => (i.productId === productId ? { ...i, quantity: qty } : i)),
+            ? prev.filter((i) => i.id !== id)
+            : prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
         ),
       clear: () => setItems([]),
     };

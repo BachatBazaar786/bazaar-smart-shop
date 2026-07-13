@@ -1,13 +1,14 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { products, type Product } from "@/data/products";
+import type { CartSnapshot } from "@/types/catalog";
+
+type WishlistItem = Omit<CartSnapshot, "stock">;
 
 type WishlistContextValue = {
-  ids: string[];
-  items: Product[];
+  items: WishlistItem[];
   count: number;
   has: (id: string) => boolean;
-  toggle: (id: string) => void;
+  toggle: (item: WishlistItem) => void;
   remove: (id: string) => void;
   clear: () => void;
 };
@@ -15,18 +16,22 @@ type WishlistContextValue = {
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [ids, setIds] = useLocalStorage<string[]>("bab_wishlist", []);
+  const [items, setItems] = useLocalStorage<WishlistItem[]>("bab_wishlist_v2", []);
   const value = useMemo<WishlistContextValue>(
     () => ({
-      ids,
-      items: ids.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[],
-      count: ids.length,
-      has: (id) => ids.includes(id),
-      toggle: (id) => setIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])),
-      remove: (id) => setIds((prev) => prev.filter((x) => x !== id)),
-      clear: () => setIds([]),
+      items,
+      count: items.length,
+      has: (id) => items.some((i) => i.id === id),
+      toggle: (item) =>
+        setItems((prev) =>
+          prev.some((i) => i.id === item.id)
+            ? prev.filter((i) => i.id !== item.id)
+            : [...prev, item],
+        ),
+      remove: (id) => setItems((prev) => prev.filter((i) => i.id !== id)),
+      clear: () => setItems([]),
     }),
-    [ids, setIds],
+    [items, setItems],
   );
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }

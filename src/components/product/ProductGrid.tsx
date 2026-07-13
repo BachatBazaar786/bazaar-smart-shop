@@ -1,7 +1,7 @@
-import type { Product } from "@/data/products";
+import type { ProductListItem } from "@/types/catalog";
 import { ProductCard } from "./ProductCard";
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products }: { products: ProductListItem[] }) {
   if (products.length === 0)
     return <div className="text-center py-12 text-muted-foreground">No products found.</div>;
   return (

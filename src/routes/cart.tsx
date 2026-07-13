@@ -22,7 +22,7 @@ function CartPage() {
       <Breadcrumbs items={[{ label: "Cart" }]} />
       <h1 className="font-display text-3xl md:text-4xl font-bold">Your cart</h1>
 
-      {cart.detailed.length === 0 ? (
+      {cart.items.length === 0 ? (
         <div className="mt-8">
           <EmptyState
             icon={<ShoppingBag className="h-7 w-7" />}
@@ -35,27 +35,26 @@ function CartPage() {
         <div className="grid lg:grid-cols-[1fr_360px] gap-8 mt-6">
           <div className="rounded-lg border border-border bg-card">
             <ul className="divide-y divide-border">
-              {cart.detailed.map((item) => {
-                const price = item.product.salePrice ?? item.product.price;
+              {cart.items.map((item) => {
+                const price = item.salePrice ?? item.price;
                 return (
-                  <li key={item.productId} className="p-4 flex gap-4">
-                    <Link to="/product/$slug" params={{ slug: item.product.slug }} className="h-24 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
-                      <img src={item.product.images[0]} alt="" className="h-full w-full object-cover" />
+                  <li key={item.id} className="p-4 flex gap-4">
+                    <Link to="/product/$slug" params={{ slug: item.slug }} className="h-24 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
+                      <img src={item.image} alt="" className="h-full w-full object-cover" />
                     </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <Link to="/product/$slug" params={{ slug: item.product.slug }} className="font-medium hover:text-primary line-clamp-2">
-                            {item.product.name}
+                          <Link to="/product/$slug" params={{ slug: item.slug }} className="font-medium hover:text-primary line-clamp-2">
+                            {item.name}
                           </Link>
-                          <div className="text-xs text-muted-foreground mt-0.5">{item.product.category}</div>
                         </div>
-                        <button onClick={() => cart.remove(item.productId)} aria-label="Remove" className="text-muted-foreground hover:text-destructive shrink-0">
+                        <button onClick={() => cart.remove(item.id)} aria-label="Remove" className="text-muted-foreground hover:text-destructive shrink-0">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
-                        <QuantitySelector value={item.quantity} onChange={(n) => cart.setQty(item.productId, n)} max={item.product.stock} />
+                        <QuantitySelector value={item.quantity} onChange={(n) => cart.setQty(item.id, n)} max={item.stock} />
                         <div className="text-right">
                           <div className="font-semibold">{formatPKR(price * item.quantity)}</div>
                           <div className="text-xs text-muted-foreground">{formatPKR(price)} each</div>
