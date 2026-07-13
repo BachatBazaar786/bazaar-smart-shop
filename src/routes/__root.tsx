@@ -20,20 +20,16 @@ import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 grid place-items-center py-24 px-4">
-        <div className="max-w-lg text-center">
-          <div className="text-savings font-display text-7xl md:text-8xl font-bold">404</div>
-          <h1 className="mt-4 font-display text-2xl md:text-3xl font-bold">This page took a wrong turn</h1>
-          <p className="mt-2 text-muted-foreground">The page you're looking for doesn't exist or has been moved. Try searching, or head back to the store.</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-dark">Go home</Link>
-            <Link to="/shop" className="inline-flex items-center justify-center rounded-md border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent">Browse products</Link>
-          </div>
+    <div className="grid place-items-center py-24 px-4">
+      <div className="max-w-lg text-center">
+        <div className="text-savings font-display text-7xl md:text-8xl font-bold">404</div>
+        <h1 className="mt-4 font-display text-2xl md:text-3xl font-bold">This page took a wrong turn</h1>
+        <p className="mt-2 text-muted-foreground">The page you're looking for doesn't exist or has been moved. Try searching, or head back to the store.</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-dark">Go home</Link>
+          <Link to="/shop" className="inline-flex items-center justify-center rounded-md border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent">Browse products</Link>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 }
