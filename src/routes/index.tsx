@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Leaf, ShieldCheck, Sparkles, Truck, Headphones, Package, Mountain } from "lucide-react";
 import { categories } from "@/data/categories";
 import { bestSellers, dealsProducts, featured, newArrivals, products } from "@/data/products";
+import { toListItems, toListItem } from "@/lib/product-adapter";
 import { CategoryCard } from "@/components/common/CategoryCard";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading, ViewAll } from "@/components/common/SectionHeading";
