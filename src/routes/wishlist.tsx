@@ -20,7 +20,12 @@ function WishlistPage() {
 
       <div className="mt-6">
         {wishlist.items.length > 0 ? (
-          <ProductGrid products={wishlist.items} />
+          <ProductGrid products={wishlist.items.map((w) => ({
+            id: w.id, slug: w.slug, name: w.name, image: w.image,
+            price: w.price, salePrice: w.salePrice, stock: 1,
+            rating: 0, reviewCount: 0, category: null,
+            bestSeller: false, newArrival: false, onDeal: false, featured: false,
+          }))} />
         ) : (
           <EmptyState
             icon={<Heart className="h-7 w-7" />}
