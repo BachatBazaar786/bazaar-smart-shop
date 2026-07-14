@@ -23,7 +23,15 @@ import {
 export function Header() {
   const cart = useCart();
   const wishlist = useWishlist();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+  };
 
   return (
     <>
