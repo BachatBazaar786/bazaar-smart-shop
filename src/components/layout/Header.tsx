@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, Heart, ShoppingBag, User, ChevronDown } from "lucide-react";
+import { Menu, Heart, ShoppingBag, User, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
@@ -20,7 +23,15 @@ import {
 export function Header() {
   const cart = useCart();
   const wishlist = useWishlist();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+  };
 
   return (
     <>
@@ -45,13 +56,37 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              <Link
-                to="/account"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md px-3 h-10 hover:bg-accent text-sm"
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden md:inline">Account</span>
-              </Link>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="hidden sm:inline-flex items-center gap-2 rounded-md px-3 h-10 hover:bg-accent text-sm">
+                    <User className="h-4 w-4" />
+                    <span className="hidden md:inline max-w-[120px] truncate">{user.email}</span>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/account" className="cursor-pointer"><LayoutDashboard className="h-4 w-4 mr-2" /> My account</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/wishlist" className="cursor-pointer"><Heart className="h-4 w-4 mr-2" /> Wishlist</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" /> Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="hidden sm:inline-flex items-center gap-2 rounded-md px-3 h-10 hover:bg-accent text-sm"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden md:inline">Sign in</span>
+                </Link>
+              )}
               <Link
                 to="/wishlist"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent"

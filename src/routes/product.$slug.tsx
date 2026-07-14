@@ -1,8 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { products, relatedProducts } from "@/data/products";
-import { toListItems } from "@/lib/product-adapter";
-import { categories } from "@/data/categories";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog.functions";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Price } from "@/components/product/Price";
 import { Rating } from "@/components/product/Rating";
@@ -17,10 +16,20 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { toast } from "sonner";
 
+const productQO = (slug: string) => queryOptions({
+  queryKey: ["product", slug],
+  queryFn: () => getProductBySlug({ data: { slug } }),
+});
+const relatedQO = (slug: string) => queryOptions({
+  queryKey: ["product", slug, "related"],
+  queryFn: () => getRelatedProducts({ data: { slug, limit: 4 } }),
+});
+
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
-    const product = products.find((p) => p.slug === params.slug);
+  loader: async ({ params, context }) => {
+    const product = await context.queryClient.ensureQueryData(productQO(params.slug));
     if (!product) throw notFound();
+    context.queryClient.ensureQueryData(relatedQO(params.slug));
     return { product };
   },
   head: ({ loaderData }) => ({
@@ -50,20 +59,34 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const { data: product } = useSuspenseQuery(productQO(slug));
+  const { data: related } = useSuspenseQuery(relatedQO(slug));
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
   const cart = useCart();
   const wishlist = useWishlist();
   const recent = useRecentlyViewed();
-  const category = categories.find((c) => c.slug === product.categorySlug);
-  const related = relatedProducts(product.slug);
+
+  if (!product) return null;
+  const category = product.category;
   const inWishlist = wishlist.has(product.id);
 
-  useEffect(() => { recent.add(product.id); }, [product.id]);
+  useEffect(() => {
+    recent.add({
+      id: product.id, slug: product.slug, name: product.name, image: product.images[0],
+      price: product.price, salePrice: product.salePrice, stock: product.stock, rating: product.rating,
+      reviewCount: product.reviewCount, category: product.category,
+      bestSeller: product.bestSeller, newArrival: product.newArrival, onDeal: product.onDeal, featured: product.featured,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   const addToCart = () => {
-    cart.add(product.id, qty);
+    cart.add({
+      id: product.id, slug: product.slug, name: product.name, image: product.images[0],
+      price: product.price, salePrice: product.salePrice, stock: product.stock,
+    }, qty);
     toast.success(`Added ${qty} × ${product.name} to cart`);
   };
 
@@ -98,7 +121,7 @@ function ProductPage() {
             <Rating value={product.rating} />
             <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
           </div>
-          <div className="mt-5"><Price price={product.price} salePrice={product.salePrice} size="lg" /></div>
+          <div className="mt-5"><Price price={product.price} salePrice={product.salePrice ?? undefined} size="lg" /></div>
           <p className="mt-4 text-muted-foreground">{product.shortDescription}</p>
 
           {product.benefits.length > 0 && (
@@ -127,7 +150,7 @@ function ProductPage() {
             <Button onClick={addToCart} disabled={product.stock === 0} size="lg" className="gap-2 bg-primary hover:bg-primary-dark">
               <ShoppingBag className="h-4 w-4" /> Add to cart
             </Button>
-            <Button variant="outline" size="lg" onClick={() => wishlist.toggle(product.id)} className="gap-2">
+            <Button variant="outline" size="lg" onClick={() => wishlist.toggle({ id: product.id, slug: product.slug, name: product.name, image: product.images[0], price: product.price, salePrice: product.salePrice })} className="gap-2">
               <Heart className={`h-4 w-4 ${inWishlist ? "fill-savings text-savings" : ""}`} />
               {inWishlist ? "Saved" : "Wishlist"}
             </Button>
@@ -153,27 +176,29 @@ function ProductPage() {
           <TabsList>
             <TabsTrigger value="description">Description</TabsTrigger>
             <TabsTrigger value="specs">Specifications</TabsTrigger>
-            <TabsTrigger value="usage">How to use</TabsTrigger>
+            {product.usage && <TabsTrigger value="usage">How to use</TabsTrigger>}
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
             <p className="whitespace-pre-line">{product.description}</p>
           </TabsContent>
           <TabsContent value="specs">
-            <dl className="divide-y divide-border border border-border rounded-lg overflow-hidden max-w-2xl">
-              {product.specifications.map((s: { label: string; value: string }) => (
-                <div key={s.label} className="grid grid-cols-3 py-3 px-4 text-sm">
-                  <dt className="font-medium">{s.label}</dt>
-                  <dd className="col-span-2 text-muted-foreground">{s.value}</dd>
-                </div>
-              ))}
-            </dl>
+            {product.specifications.length > 0 ? (
+              <dl className="divide-y divide-border border border-border rounded-lg overflow-hidden max-w-2xl">
+                {product.specifications.map((s) => (
+                  <div key={s.label} className="grid grid-cols-3 py-3 px-4 text-sm">
+                    <dt className="font-medium">{s.label}</dt>
+                    <dd className="col-span-2 text-muted-foreground">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : <p className="text-sm text-muted-foreground">No specifications listed.</p>}
           </TabsContent>
-          <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
-            <p>{product.usage}</p>
-          </TabsContent>
+          {product.usage && (
+            <TabsContent value="usage" className="max-w-3xl text-muted-foreground"><p>{product.usage}</p></TabsContent>
+          )}
           <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
-            <p><strong className="text-foreground">Delivery:</strong> We deliver across Pakistan within 2–5 working days depending on your city. Same-day delivery available in select areas of Karachi, Lahore and Islamabad.</p>
+            <p><strong className="text-foreground">Delivery:</strong> We deliver across Pakistan within 2–5 working days depending on your city.</p>
             <p><strong className="text-foreground">Returns:</strong> 7-day easy returns on unopened items. Perishable and food items are non-returnable once opened.</p>
             <p><strong className="text-foreground">Payment:</strong> Cash on Delivery, JazzCash, EasyPaisa and bank transfer accepted.</p>
           </TabsContent>
@@ -183,7 +208,7 @@ function ProductPage() {
       {related.length > 0 && (
         <div className="mt-16">
           <SectionHeading eyebrow="You may also like" title="Related products" />
-          <ProductGrid products={toListItems(related)} />
+          <ProductGrid products={related} />
         </div>
       )}
     </div>
