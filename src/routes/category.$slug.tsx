@@ -1,25 +1,34 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { categories } from "@/data/categories";
-import { products } from "@/data/products";
-import { toListItems } from "@/lib/product-adapter";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { getCategoryBySlug, listProducts } from "@/lib/catalog.functions";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { SectionHeading } from "@/components/common/SectionHeading";
 
+const categoryQO = (slug: string) => queryOptions({
+  queryKey: ["category", slug],
+  queryFn: () => getCategoryBySlug({ data: { slug } }),
+});
+const categoryProductsQO = (slug: string) => queryOptions({
+  queryKey: ["category", slug, "products"],
+  queryFn: () => listProducts({ data: { categorySlug: slug } }),
+});
+
 export const Route = createFileRoute("/category/$slug")({
-  loader: ({ params }) => {
-    const category = categories.find((c) => c.slug === params.slug);
+  loader: async ({ params, context }) => {
+    const category = await context.queryClient.ensureQueryData(categoryQO(params.slug));
     if (!category) throw notFound();
+    context.queryClient.ensureQueryData(categoryProductsQO(params.slug));
     return { category };
   },
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
           { title: `${loaderData.category.name} — BachatAtBazaar.pk` },
-          { name: "description", content: loaderData.category.description },
+          { name: "description", content: loaderData.category.description ?? loaderData.category.name },
           { property: "og:title", content: loaderData.category.name },
-          { property: "og:description", content: loaderData.category.description },
-          { property: "og:image", content: loaderData.category.image },
+          { property: "og:description", content: loaderData.category.description ?? loaderData.category.name },
+          ...(loaderData.category.image_url ? [{ property: "og:image", content: loaderData.category.image_url }] : []),
         ]
       : [{ title: "Category not found" }, { name: "robots", content: "noindex" }],
   }),
@@ -39,27 +48,30 @@ export const Route = createFileRoute("/category/$slug")({
 });
 
 function CategoryPage() {
-  const { category } = Route.useLoaderData();
-  const items = products.filter((p) => p.categorySlug === category.slug);
+  const { slug } = Route.useParams();
+  const { data: category } = useSuspenseQuery(categoryQO(slug));
+  const { data: items } = useSuspenseQuery(categoryProductsQO(slug));
+  if (!category) return null;
+  const image = category.image_url ?? `https://picsum.photos/seed/${category.slug}/1200/600`;
 
   return (
     <div>
       <div className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0">
-          <img src={category.image} alt="" className="h-full w-full object-cover opacity-25" />
+          <img src={image} alt="" className="h-full w-full object-cover opacity-25" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/40" />
         </div>
         <div className="container-page relative py-14 md:py-20">
           <Breadcrumbs items={[{ label: "Shop", to: "/shop" }, { label: category.name }]} />
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">{category.name}</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">{category.description}</p>
+          {category.description && <p className="mt-3 max-w-2xl text-muted-foreground">{category.description}</p>}
         </div>
       </div>
 
       <div className="container-page py-10">
         <SectionHeading title={`${items.length} product${items.length !== 1 ? "s" : ""} in ${category.name}`} />
         {items.length > 0 ? (
-          <ProductGrid products={toListItems(items)} />
+          <ProductGrid products={items} />
         ) : (
           <div className="rounded-lg border border-dashed border-border p-12 text-center">
             <h3 className="font-display text-xl font-semibold">Coming soon</h3>

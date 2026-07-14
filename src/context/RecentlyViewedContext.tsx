@@ -1,26 +1,28 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { products, type Product } from "@/data/products";
+import type { ProductListItem } from "@/types/catalog";
 
 type Ctx = {
-  items: Product[];
-  add: (id: string) => void;
+  items: ProductListItem[];
+  add: (item: ProductListItem) => void;
+  clear: () => void;
 };
 
 const RecentContext = createContext<Ctx | null>(null);
 
 export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
-  const [ids, setIds] = useLocalStorage<string[]>("bab_recent", []);
+  const [items, setItems] = useLocalStorage<ProductListItem[]>("bab_recent_v2", []);
   const value = useMemo<Ctx>(
     () => ({
-      items: ids.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[],
-      add: (id) =>
-        setIds((prev) => {
-          const next = [id, ...prev.filter((x) => x !== id)];
+      items,
+      add: (item) =>
+        setItems((prev) => {
+          const next = [item, ...prev.filter((x) => x.id !== item.id)];
           return next.slice(0, 8);
         }),
+      clear: () => setItems([]),
     }),
-    [ids, setIds],
+    [items, setItems],
   );
   return <RecentContext.Provider value={value}>{children}</RecentContext.Provider>;
 }

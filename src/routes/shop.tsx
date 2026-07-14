@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { z } from "zod";
-import { products } from "@/data/products";
-import { toListItems } from "@/lib/product-adapter";
-import { categories } from "@/data/categories";
+import { listProducts, listCategories } from "@/lib/catalog.functions";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,21 +16,39 @@ import { Input } from "@/components/ui/input";
 const searchSchema = z.object({
   q: z.string().optional(),
   cat: z.string().optional(),
-  sort: z.enum(["featured", "newest", "price-asc", "price-desc", "best", "rating"]).optional(),
+  sort: z.enum(["featured", "newest", "price-asc", "price-desc", "rating"]).optional(),
   deals: z.string().optional(),
+});
+
+const productsQO = queryOptions({
+  queryKey: ["products", "all"],
+  queryFn: () => listProducts({ data: {} }),
+});
+const categoriesQO = queryOptions({
+  queryKey: ["categories"],
+  queryFn: () => listCategories(),
 });
 
 export const Route = createFileRoute("/shop")({
   head: () => ({ meta: [{ title: "Shop — BachatAtBazaar.pk" }, { name: "description", content: "Browse all products across categories at BachatAtBazaar.pk." }] }),
   validateSearch: searchSchema,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(productsQO),
+      context.queryClient.ensureQueryData(categoriesQO),
+    ]);
+  },
+  errorComponent: ({ error }) => <div className="container-page py-16 text-center text-sm text-muted-foreground">{error.message}</div>,
   component: Shop,
 });
 
 function Shop() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const { data: products } = useSuspenseQuery(productsQO);
+  const { data: categories } = useSuspenseQuery(categoriesQO);
   const [selectedCats, setSelectedCats] = useState<string[]>(search.cat ? [search.cat] : []);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [q, setQ] = useState(search.q ?? "");
@@ -40,10 +57,10 @@ function Shop() {
   const filtered = useMemo(() => {
     let list = products.slice();
     if (search.deals) list = list.filter((p) => p.onDeal);
-    if (selectedCats.length) list = list.filter((p) => selectedCats.includes(p.categorySlug));
+    if (selectedCats.length) list = list.filter((p) => p.category && selectedCats.includes(p.category.slug));
     if (q.trim()) {
       const t = q.toLowerCase();
-      list = list.filter((p) => p.name.toLowerCase().includes(t) || p.tags.some((tag) => tag.includes(t)));
+      list = list.filter((p) => p.name.toLowerCase().includes(t));
     }
     list = list.filter((p) => {
       const price = p.salePrice ?? p.price;
@@ -55,21 +72,16 @@ function Shop() {
       case "price-asc": list.sort((a, b) => (a.salePrice ?? a.price) - (b.salePrice ?? b.price)); break;
       case "price-desc": list.sort((a, b) => (b.salePrice ?? b.price) - (a.salePrice ?? a.price)); break;
       case "newest": list.sort((a, b) => (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0)); break;
-      case "best": list.sort((a, b) => (b.bestSeller ? 1 : 0) - (a.bestSeller ? 1 : 0)); break;
       case "rating": list.sort((a, b) => b.rating - a.rating); break;
     }
     return list;
-  }, [selectedCats, priceRange, inStockOnly, minRating, q, sort, search.deals]);
+  }, [products, selectedCats, priceRange, inStockOnly, minRating, q, sort, search.deals]);
 
   const toggleCat = (slug: string) =>
     setSelectedCats((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
 
   const clearAll = () => {
-    setSelectedCats([]);
-    setPriceRange([0, 5000]);
-    setInStockOnly(false);
-    setMinRating(0);
-    setQ("");
+    setSelectedCats([]); setPriceRange([0, 10000]); setInStockOnly(false); setMinRating(0); setQ("");
     navigate({ search: {} as never });
   };
 
@@ -94,7 +106,7 @@ function Shop() {
       </div>
       <div>
         <div className="font-semibold mb-3 text-sm">Price (Rs)</div>
-        <Slider min={0} max={5000} step={50} value={priceRange} onValueChange={(v) => setPriceRange([v[0], v[1]] as [number, number])} />
+        <Slider min={0} max={10000} step={100} value={priceRange} onValueChange={(v) => setPriceRange([v[0], v[1]] as [number, number])} />
         <div className="mt-2 flex justify-between text-xs text-muted-foreground">
           <span>Rs {priceRange[0]}</span><span>Rs {priceRange[1]}</span>
         </div>
@@ -116,9 +128,7 @@ function Shop() {
           ))}
         </div>
       </div>
-      {activeCount > 0 && (
-        <Button variant="outline" className="w-full" onClick={clearAll}>Clear all filters</Button>
-      )}
+      {activeCount > 0 && <Button variant="outline" className="w-full" onClick={clearAll}>Clear all filters</Button>}
     </div>
   );
 
@@ -138,9 +148,7 @@ function Shop() {
                 {activeCount > 0 && <span className="rounded-full bg-primary text-primary-foreground text-[10px] px-1.5">{activeCount}</span>}
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-full sm:w-80 overflow-y-auto p-6">
-              {Filters}
-            </SheetContent>
+            <SheetContent side="left" className="w-full sm:w-80 overflow-y-auto p-6">{Filters}</SheetContent>
           </Sheet>
           <Select value={sort} onValueChange={(v) => navigate({ search: { ...search, sort: v as never } })}>
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort" /></SelectTrigger>
@@ -149,7 +157,6 @@ function Shop() {
               <SelectItem value="newest">Newest</SelectItem>
               <SelectItem value="price-asc">Price: Low to High</SelectItem>
               <SelectItem value="price-desc">Price: High to Low</SelectItem>
-              <SelectItem value="best">Best selling</SelectItem>
               <SelectItem value="rating">Highest rated</SelectItem>
             </SelectContent>
           </Select>
@@ -166,21 +173,15 @@ function Shop() {
               </button>
             ) : null;
           })}
-          {inStockOnly && (
-            <button onClick={() => setInStockOnly(false)} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs">In stock <X className="h-3 w-3" /></button>
-          )}
-          {minRating > 0 && (
-            <button onClick={() => setMinRating(0)} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs">{minRating}★+ <X className="h-3 w-3" /></button>
-          )}
-          {search.deals && (
-            <button onClick={() => navigate({ search: { ...search, deals: undefined } })} className="inline-flex items-center gap-1 rounded-full bg-savings text-savings-foreground px-3 py-1 text-xs">On sale <X className="h-3 w-3" /></button>
-          )}
+          {inStockOnly && <button onClick={() => setInStockOnly(false)} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs">In stock <X className="h-3 w-3" /></button>}
+          {minRating > 0 && <button onClick={() => setMinRating(0)} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs">{minRating}★+ <X className="h-3 w-3" /></button>}
+          {search.deals && <button onClick={() => navigate({ search: { ...search, deals: undefined } })} className="inline-flex items-center gap-1 rounded-full bg-savings text-savings-foreground px-3 py-1 text-xs">On sale <X className="h-3 w-3" /></button>}
         </div>
       )}
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-8">
         <aside className="hidden lg:block">{Filters}</aside>
-        <div><ProductGrid products={toListItems(filtered)} /></div>
+        <div><ProductGrid products={filtered} /></div>
       </div>
     </div>
   );
