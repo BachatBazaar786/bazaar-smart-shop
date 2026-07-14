@@ -171,8 +171,13 @@ function AddressManager({ addresses, onChanged }: { addresses: AddressRow[]; onC
   const saveFn = useServerFn(saveMyAddress);
   const delFn = useServerFn(deleteMyAddress);
 
+  type AddressPayload = {
+    id?: string; full_name: string; phone: string; line1: string; line2: string;
+    city: string; province: string; postal_code: string; country: string; is_default: boolean;
+  };
+
   const save = useMutation({
-    mutationFn: (data: Parameters<typeof saveFn>[0]["data"]) => saveFn({ data }),
+    mutationFn: (data: AddressPayload) => saveFn({ data }),
     onSuccess: () => { toast.success("Address saved"); setEditing(null); setAdding(false); onChanged(); },
     onError: (e: Error) => toast.error(e.message),
   });
