@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, Heart, ShoppingBag, User, ChevronDown } from "lucide-react";
+import { Menu, Heart, ShoppingBag, User, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
