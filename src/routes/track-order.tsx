@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
-import { Package, Search } from "lucide-react";
+import { Package, Search, Loader2 } from "lucide-react";
+import { trackOrderPublic } from "@/lib/orders.functions";
+import { formatPKR } from "@/lib/format";
 
 export const Route = createFileRoute("/track-order")({
   head: () => ({
@@ -18,13 +22,18 @@ export const Route = createFileRoute("/track-order")({
 function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<null | "not-found" | "searching">(null);
+  const trackFn = useServerFn(trackOrderPublic);
+  const track = useMutation({
+    mutationFn: (input: { order_number: string; email: string }) =>
+      trackFn({ data: input }),
+  });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("searching");
-    setTimeout(() => setStatus("not-found"), 600);
+    track.mutate({ order_number: orderNumber.trim(), email: email.trim() });
   };
+
+  const result = track.data;
 
   return (
     <div className="container-page py-8">
@@ -64,17 +73,57 @@ function TrackOrderPage() {
           </div>
           <button
             type="submit"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary h-11 text-sm font-medium text-primary-foreground hover:bg-primary-dark"
+            disabled={track.isPending}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary h-11 text-sm font-medium text-primary-foreground hover:bg-primary-dark disabled:opacity-60"
           >
-            <Search className="h-4 w-4" />
+            {track.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
             Track order
           </button>
         </form>
 
-        {status === "not-found" && (
+        {track.isError && (
+          <div className="mt-6 rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive text-center">
+            Something went wrong. Please try again.
+          </div>
+        )}
+
+        {result && !result.found && (
           <div className="mt-6 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground text-center">
             We couldn't find an order matching those details. Please double-check your order number and email, or{" "}
             <a href="/contact" className="text-primary underline underline-offset-2">contact support</a>.
+          </div>
+        )}
+
+        {result && result.found && (
+          <div className="mt-6 rounded-xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Order</div>
+                <div className="font-display text-lg font-bold">{result.order.order_number}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
+                <div className="font-display text-lg font-bold">{formatPKR(result.order.total)}</div>
+              </div>
+            </div>
+            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="font-medium capitalize">{result.order.status}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Payment</dt>
+                <dd className="font-medium capitalize">{result.order.payment_status.replace(/_/g, " ")}</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-muted-foreground">Placed on</dt>
+                <dd className="font-medium">{new Date(result.order.created_at).toLocaleString()}</dd>
+              </div>
+            </dl>
           </div>
         )}
 

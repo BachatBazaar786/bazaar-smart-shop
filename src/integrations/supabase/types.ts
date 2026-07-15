@@ -563,6 +563,16 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       refund_order_stock: { Args: { _order_id: string }; Returns: undefined }
+      track_order_public: {
+        Args: { _email: string; _order_number: string }
+        Returns: {
+          created_at: string
+          order_number: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+        }[]
+      }
     }
     Enums: {
       app_role: "customer" | "admin" | "super_admin"

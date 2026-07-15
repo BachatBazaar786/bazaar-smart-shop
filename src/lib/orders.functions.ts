@@ -142,8 +142,9 @@ export const createOrder = createServerFn({ method: "POST" })
       order_id: order.id,
       status: "pending",
       note: "Order placed by customer",
-      changed_by: userId,
+      created_by: userId,
     } as never);
+
 
 
     return { id: order.id, order_number: order.order_number };
@@ -223,25 +224,21 @@ export const trackOrderPublic = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const supabase = getPublicClient();
-    const { data: order } = await supabase
-      .from("orders")
-      .select("order_number, status, payment_status, created_at, total, email")
-      .eq("order_number", data.order_number)
-      .maybeSingle();
-    if (
-      !order ||
-      order.email?.toLowerCase() !== data.email.toLowerCase()
-    ) {
-      return { found: false as const };
-    }
+    const { data: rows, error } = await supabase.rpc("track_order_public", {
+      _order_number: data.order_number,
+      _email: data.email,
+    });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row) return { found: false as const };
     return {
       found: true as const,
       order: {
-        order_number: order.order_number,
-        status: order.status,
-        payment_status: order.payment_status,
-        created_at: order.created_at,
-        total: Number(order.total),
+        order_number: row.order_number as string,
+        status: row.status as string,
+        payment_status: row.payment_status as string,
+        created_at: row.created_at as string,
+        total: Number(row.total),
       },
     };
   });
