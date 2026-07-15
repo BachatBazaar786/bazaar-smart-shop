@@ -143,7 +143,8 @@ export const createOrder = createServerFn({ method: "POST" })
       status: "pending",
       note: "Order placed by customer",
       changed_by: userId,
-    });
+    } as never);
+
 
     return { id: order.id, order_number: order.order_number };
   });
