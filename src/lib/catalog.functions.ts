@@ -92,8 +92,8 @@ export const listProducts = createServerFn({ method: "GET" })
     if (typeof data.minRating === "number")
       q = q.gte("rating", data.minRating);
     if (data.search && data.search.trim()) {
-      const s = data.search.trim().replace(/[%_]/g, "");
-      q = q.or(`name.ilike.%${s}%,short_description.ilike.%${s}%`);
+      const s = escapePostgrestLiteral(data.search);
+      if (s) q = q.or(`name.ilike.%${s}%,short_description.ilike.%${s}%`);
     }
     if (data.categorySlug) {
       const { data: cat } = await supabase
