@@ -1,7 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getProductBySlug, getRelatedProducts } from "@/lib/catalog.functions";
+import { getProductVariantsPublic, trackProductView } from "@/lib/phase6.functions";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Price } from "@/components/product/Price";
 import { Rating } from "@/components/product/Rating";
@@ -15,6 +17,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { toast } from "sonner";
+
 
 const productQO = (slug: string) => queryOptions({
   queryKey: ["product", slug],
@@ -105,9 +108,23 @@ function ProductPage() {
   const { data: related } = useSuspenseQuery(relatedQO(slug));
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const cart = useCart();
   const wishlist = useWishlist();
   const recent = useRecentlyViewed();
+
+  const variantsFn = useServerFn(getProductVariantsPublic);
+  const trackFn = useServerFn(trackProductView);
+  const variants = useQuery({
+    queryKey: ["product-variants", product?.id],
+    queryFn: () => variantsFn({ data: { product_id: product!.id } }),
+    enabled: !!product?.id,
+  });
+
+  useEffect(() => {
+    if (!product?.id) return;
+    trackFn({ data: { product_id: product.id } }).catch(() => {});
+  }, [product?.id, trackFn]);
 
   if (!product) return null;
   const category = product.category;
@@ -123,13 +140,29 @@ function ProductPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
 
+  const selectedVariant = variants.data?.find((v) => v.id === selectedVariantId) ?? null;
+  const displayPrice = selectedVariant ? Number(selectedVariant.price) : product.price;
+  const displaySale = selectedVariant
+    ? selectedVariant.sale_price !== null && selectedVariant.sale_price !== undefined
+      ? Number(selectedVariant.sale_price)
+      : null
+    : product.salePrice;
+  const displayStock = selectedVariant ? Number(selectedVariant.stock) : product.stock;
+
   const addToCart = () => {
     cart.add({
-      id: product.id, slug: product.slug, name: product.name, image: product.images[0],
-      price: product.price, salePrice: product.salePrice, stock: product.stock,
+      id: product.id,
+      slug: product.slug,
+      name: selectedVariant ? `${product.name} — ${selectedVariant.name}` : product.name,
+      image: product.images[0],
+      price: displayPrice,
+      salePrice: displaySale,
+      stock: displayStock,
     }, qty);
     toast.success(`Added ${qty} × ${product.name} to cart`);
   };
+
+
 
   return (
     <div className="container-page py-6">
@@ -169,8 +202,36 @@ function ProductPage() {
             <Rating value={product.rating} />
             <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
           </div>
-          <div className="mt-5"><Price price={product.price} salePrice={product.salePrice ?? undefined} size="lg" /></div>
+          <div className="mt-5"><Price price={displayPrice} salePrice={displaySale ?? undefined} size="lg" /></div>
           <p className="mt-4 text-muted-foreground">{product.shortDescription}</p>
+
+          {variants.data && variants.data.length > 0 && (
+            <div className="mt-5">
+              <div className="text-sm font-medium mb-2">Options</div>
+              <div className="flex flex-wrap gap-2">
+                {variants.data.map((v) => {
+                  const active = v.id === selectedVariantId;
+                  const outOfStock = Number(v.stock) <= 0;
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setSelectedVariantId(active ? null : v.id)}
+                      disabled={outOfStock}
+                      className={`px-3 py-2 rounded-md border text-sm transition-colors ${
+                        active
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border hover:bg-accent"
+                      } ${outOfStock ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {v.name}
+                      {outOfStock && <span className="ml-1 text-xs">(out)</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {product.benefits.length > 0 && (
             <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -184,9 +245,9 @@ function ProductPage() {
           )}
 
           <div className="mt-6 flex items-center gap-4">
-            {product.stock > 0 ? (
+            {displayStock > 0 ? (
               <span className="inline-flex items-center gap-1.5 text-sm text-primary font-medium">
-                <span className="h-2 w-2 rounded-full bg-primary" /> In stock ({product.stock} available)
+                <span className="h-2 w-2 rounded-full bg-primary" /> In stock ({displayStock} available)
               </span>
             ) : (
               <span className="text-sm text-destructive font-medium">Out of stock</span>
@@ -194,8 +255,8 @@ function ProductPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <QuantitySelector value={qty} onChange={setQty} max={product.stock} />
-            <Button onClick={addToCart} disabled={product.stock === 0} size="lg" className="gap-2 bg-primary hover:bg-primary-dark">
+            <QuantitySelector value={qty} onChange={setQty} max={displayStock} />
+            <Button onClick={addToCart} disabled={displayStock === 0} size="lg" className="gap-2 bg-primary hover:bg-primary-dark">
               <ShoppingBag className="h-4 w-4" /> Add to cart
             </Button>
             <Button variant="outline" size="lg" onClick={() => wishlist.toggle({ id: product.id, slug: product.slug, name: product.name, image: product.images[0], price: product.price, salePrice: product.salePrice })} className="gap-2">
@@ -203,6 +264,7 @@ function ProductPage() {
               {inWishlist ? "Saved" : "Wishlist"}
             </Button>
           </div>
+
 
           <div className="mt-8 grid grid-cols-3 gap-4 pt-6 border-t border-border">
             {[

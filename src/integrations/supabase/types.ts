@@ -62,6 +62,117 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_post_categories: {
+        Row: {
+          category_id: string
+          post_id: string
+        }
+        Insert: {
+          category_id: string
+          post_id: string
+        }
+        Update: {
+          category_id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "blog_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_post_categories_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          body: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string | null
+          reading_minutes: number | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          status: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["post_status"]
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       bootstrap_admin_emails: {
         Row: {
           created_at: string
@@ -196,6 +307,102 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_redemptions: {
+        Row: {
+          amount: number
+          coupon_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          coupon_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          coupon_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_discount: number | null
+          min_order: number
+          per_user_limit: number | null
+          starts_at: string | null
+          updated_at: string
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_discount?: number | null
+          min_order?: number
+          per_user_limit?: number | null
+          starts_at?: string | null
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_discount?: number | null
+          min_order?: number
+          per_user_limit?: number | null
+          starts_at?: string | null
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
       customer_notes: {
         Row: {
           created_at: string
@@ -249,6 +456,8 @@ export type Database = {
           sku_snapshot: string
           subtotal: number
           unit_price: number
+          variant_id: string | null
+          variant_name: string | null
         }
         Insert: {
           id?: string
@@ -260,6 +469,8 @@ export type Database = {
           sku_snapshot: string
           subtotal: number
           unit_price: number
+          variant_id?: string | null
+          variant_name?: string | null
         }
         Update: {
           id?: string
@@ -271,6 +482,8 @@ export type Database = {
           sku_snapshot?: string
           subtotal?: number
           unit_price?: number
+          variant_id?: string | null
+          variant_name?: string | null
         }
         Relationships: [
           {
@@ -285,6 +498,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -326,8 +546,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          coupon_code: string | null
           created_at: string
           discount: number
+          discount_total: number
           email: string
           id: string
           notes: string | null
@@ -344,8 +566,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          coupon_code?: string | null
           created_at?: string
           discount?: number
+          discount_total?: number
           email: string
           id?: string
           notes?: string | null
@@ -362,8 +586,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          coupon_code?: string | null
           created_at?: string
           discount?: number
+          discount_total?: number
           email?: string
           id?: string
           notes?: string | null
@@ -378,6 +604,39 @@ export type Database = {
           total?: number
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      page_blocks: {
+        Row: {
+          active: boolean
+          block_type: string
+          created_at: string
+          data: Json
+          id: string
+          page_key: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          block_type: string
+          created_at?: string
+          data?: Json
+          id?: string
+          page_key: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          block_type?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          page_key?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -474,6 +733,91 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          active: boolean
+          attributes: Json
+          created_at: string
+          id: string
+          name: string
+          price: number
+          product_id: string
+          sale_price: number | null
+          sku: string | null
+          sort_order: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          id?: string
+          name: string
+          price: number
+          product_id: string
+          sale_price?: number | null
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          attributes?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          product_id?: string
+          sale_price?: number | null
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_views: {
+        Row: {
+          created_at: string
+          id: number
+          product_id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          product_id: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          product_id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -734,6 +1078,7 @@ export type Database = {
         }
         Returns: number
       }
+      admin_analytics_extras: { Args: { _days?: number }; Returns: Json }
       admin_dashboard_stats: { Args: never; Returns: Json }
       admin_list_customers: {
         Args: { _limit?: number; _offset?: number; _search?: string }
@@ -781,9 +1126,19 @@ export type Database = {
           total: number
         }[]
       }
+      validate_coupon: {
+        Args: { _code: string; _subtotal: number }
+        Returns: {
+          coupon_id: string
+          discount: number
+          message: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "customer" | "admin" | "super_admin"
+      discount_type: "percent" | "fixed"
       order_status:
         | "pending"
         | "confirmed"
@@ -799,6 +1154,7 @@ export type Database = {
         | "paid"
         | "failed"
         | "refunded"
+      post_status: "draft" | "published" | "archived"
       product_status: "draft" | "active" | "archived"
     }
     CompositeTypes: {
@@ -928,6 +1284,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["customer", "admin", "super_admin"],
+      discount_type: ["percent", "fixed"],
       order_status: [
         "pending",
         "confirmed",
@@ -945,6 +1302,7 @@ export const Constants = {
         "failed",
         "refunded",
       ],
+      post_status: ["draft", "published", "archived"],
       product_status: ["draft", "active", "archived"],
     },
   },

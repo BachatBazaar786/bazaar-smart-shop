@@ -12,9 +12,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPKR } from "@/lib/format";
 import { createOrder } from "@/lib/orders.functions";
+import { validateCoupon } from "@/lib/phase6.functions";
 import { listMyAddresses } from "@/lib/profile.functions";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2, Tag, X } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -34,6 +36,24 @@ function CheckoutPage() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [payment, setPayment] = useState<PaymentMethod>("cod");
   const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new");
+  const [couponInput, setCouponInput] = useState("");
+  const [applied, setApplied] = useState<{ code: string; discount: number } | null>(null);
+  const validateCouponFn = useServerFn(validateCoupon);
+  const applyCoupon = useMutation({
+    mutationFn: (code: string) => validateCouponFn({ data: { code, subtotal: cart.subtotal } }),
+    onSuccess: (res, code) => {
+      if (res.valid) {
+        setApplied({ code: code.toUpperCase(), discount: Number(res.discount) });
+        toast.success(res.message || "Coupon applied");
+      } else {
+        setApplied(null);
+        toast.error(res.message || "Coupon is not valid");
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
 
   const addressesFn = useServerFn(listMyAddresses);
   const addresses = useQuery({
@@ -73,8 +93,10 @@ function CheckoutPage() {
     }
   }, [addresses.data, selectedAddressId]);
 
+  const discount = applied ? Math.min(applied.discount, cart.subtotal) : 0;
   const shipping = cart.subtotal >= 3000 || cart.subtotal === 0 ? 0 : 250;
-  const total = cart.subtotal + shipping;
+  const total = Math.max(0, cart.subtotal - discount) + shipping;
+
 
   if (cart.items.length === 0 && !orderMutation.isPending) {
     return (
@@ -144,6 +166,8 @@ function CheckoutPage() {
         shipping_address: shippingAddress,
         payment_method: payment,
         notes: String(form.get("notes") ?? ""),
+        coupon_code: applied?.code ?? null,
+
       },
     });
   };
@@ -368,11 +392,49 @@ function CheckoutPage() {
               </li>
             ))}
           </ul>
+
+          <div className="mt-4 pt-4 border-t border-border">
+            {applied ? (
+              <div className="flex items-center justify-between rounded-md bg-primary/5 border border-primary/20 px-3 py-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{applied.code}</span>
+                  <span className="text-muted-foreground">−{formatPKR(applied.discount)}</span>
+                </div>
+                <button type="button" onClick={() => setApplied(null)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Coupon code"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!couponInput.trim() || applyCoupon.isPending}
+                  onClick={() => applyCoupon.mutate(couponInput.trim())}
+                >
+                  {applyCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
+            )}
+          </div>
+
           <dl className="mt-4 space-y-2 text-sm border-t border-border pt-4">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Subtotal</dt>
               <dd>{formatPKR(cart.subtotal)}</dd>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-primary">
+                <dt>Discount</dt>
+                <dd>−{formatPKR(discount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Shipping</dt>
               <dd>
@@ -388,6 +450,7 @@ function CheckoutPage() {
               <dd>{formatPKR(total)}</dd>
             </div>
           </dl>
+
           <Button
             type="submit"
             disabled={orderMutation.isPending}
