@@ -212,7 +212,14 @@ export const duplicateProductAdmin = createServerFn({ method: "POST" })
       .select("*, product_images(url, alt, sort_order), product_specifications(label, value, sort_order)")
       .eq("id", data.id).maybeSingle();
     if (error || !src) throw safeError("product_dup", error ?? new Error("Not found"));
-    const p = src as Record<string, unknown> & { product_images: { url: string; alt: string | null; sort_order: number }[]; product_specifications: { label: string; value: string; sort_order: number }[] };
+    const p = src as {
+      name: string; slug: string; sku: string;
+      description: string | null; short_description: string | null; usage: string | null;
+      benefits: string[]; tags: string[]; price: number; sale_price: number | null;
+      category_id: string | null; brand_id: string | null;
+      product_images: { url: string; alt: string | null; sort_order: number }[];
+      product_specifications: { label: string; value: string; sort_order: number }[];
+    };
     const suffix = Math.random().toString(36).slice(2, 6);
     const insertRow = {
       name: `${p.name} (Copy)`,
@@ -220,7 +227,7 @@ export const duplicateProductAdmin = createServerFn({ method: "POST" })
       sku: `${p.sku}-${suffix}`,
       description: p.description, short_description: p.short_description, usage: p.usage,
       benefits: p.benefits, tags: p.tags, price: p.price, sale_price: p.sale_price,
-      stock: 0, category_id: p.category_id, brand_id: p.brand_id, status: "draft",
+      stock: 0, category_id: p.category_id, brand_id: p.brand_id, status: "draft" as const,
       featured: false, best_seller: false, new_arrival: false, on_deal: false,
     };
     const { data: newP, error: e2 } = await supabase.from("products").insert(insertRow).select("id").single();
