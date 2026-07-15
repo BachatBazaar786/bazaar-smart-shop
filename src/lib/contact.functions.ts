@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { safeError } from "./server-errors";
 
 function getPublicClient() {
   return createClient<Database>(
@@ -36,7 +37,7 @@ export const submitContact = createServerFn({ method: "POST" })
       subject: data.subject,
       message: data.message,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("contact", error);
     return { ok: true };
   });
 
@@ -51,7 +52,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
       .insert({ email: data.email.toLowerCase() });
     // Ignore unique-violation duplicates (23505)
     if (error && !error.message.includes("duplicate")) {
-      throw new Error(error.message);
+      throw safeError("contact", error);
     }
     return { ok: true };
   });

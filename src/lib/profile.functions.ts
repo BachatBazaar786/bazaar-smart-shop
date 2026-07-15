@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { safeError } from "./server-errors";
 
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -11,7 +12,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
       .select("id, full_name, phone, avatar_url, created_at")
       .eq("id", userId)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("profile", error);
     return data;
   });
 
@@ -29,7 +30,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .from("profiles")
       .update({ full_name: data.full_name, phone: data.phone })
       .eq("id", userId);
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("profile", error);
     return { ok: true };
   });
 
@@ -45,7 +46,7 @@ export const listMyAddresses = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("is_default", { ascending: false })
       .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("profile", error);
     return data ?? [];
   });
 
@@ -79,7 +80,7 @@ export const saveMyAddress = createServerFn({ method: "POST" })
         .update({ ...data, user_id: userId })
         .eq("id", data.id)
         .eq("user_id", userId);
-      if (error) throw new Error(error.message);
+      if (error) throw safeError("profile", error);
       return { id: data.id };
     }
     const { data: row, error } = await supabase
@@ -87,7 +88,7 @@ export const saveMyAddress = createServerFn({ method: "POST" })
       .insert({ ...data, user_id: userId })
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("profile", error);
     return { id: row!.id };
   });
 
@@ -103,6 +104,6 @@ export const deleteMyAddress = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id)
       .eq("user_id", userId);
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("profile", error);
     return { ok: true };
   });

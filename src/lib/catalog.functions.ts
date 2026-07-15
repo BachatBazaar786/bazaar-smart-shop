@@ -7,6 +7,7 @@ import type {
   ProductDetail,
   ProductListItem,
 } from "@/types/catalog";
+import { safeError, escapePostgrestLiteral } from "./server-errors";
 
 function getPublicClient() {
   return createClient<Database>(
@@ -91,8 +92,8 @@ export const listProducts = createServerFn({ method: "GET" })
     if (typeof data.minRating === "number")
       q = q.gte("rating", data.minRating);
     if (data.search && data.search.trim()) {
-      const s = data.search.trim().replace(/[%_]/g, "");
-      q = q.or(`name.ilike.%${s}%,short_description.ilike.%${s}%`);
+      const s = escapePostgrestLiteral(data.search);
+      if (s) q = q.or(`name.ilike.%${s}%,short_description.ilike.%${s}%`);
     }
     if (data.categorySlug) {
       const { data: cat } = await supabase
@@ -127,7 +128,7 @@ export const listProducts = createServerFn({ method: "GET" })
     if (data.limit) q = q.limit(data.limit);
 
     const { data: rows, error } = await q;
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     return (rows as unknown as ProductRow[]).map(mapListItem);
   });
 
@@ -145,7 +146,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .eq("status", "active")
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     if (!p) return null;
 
     const row = p as unknown as ProductRow & {
@@ -204,7 +205,7 @@ export const getRelatedProducts = createServerFn({ method: "GET" })
       .eq("category_id", p.category_id)
       .neq("id", p.id)
       .limit(data.limit);
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     return (rows as unknown as ProductRow[]).map(mapListItem);
   });
 
@@ -216,7 +217,7 @@ export const listCategories = createServerFn({ method: "GET" }).handler(
       .select("id, slug, name, description, image_url, sort_order")
       .eq("active", true)
       .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     return (data ?? []) as CategoryItem[];
   },
 );
@@ -233,7 +234,7 @@ export const getCategoryBySlug = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .eq("active", true)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     return row as CategoryItem | null;
   });
 
@@ -244,7 +245,8 @@ export const searchProducts = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ProductListItem[]> => {
     if (!data.q.trim()) return [];
     const supabase = getPublicClient();
-    const s = data.q.trim().replace(/[%_]/g, "");
+    const s = escapePostgrestLiteral(data.q);
+    if (!s) return [];
     const { data: rows, error } = await supabase
       .from("products")
       .select(
@@ -253,6 +255,6 @@ export const searchProducts = createServerFn({ method: "GET" })
       .eq("status", "active")
       .or(`name.ilike.%${s}%,short_description.ilike.%${s}%`)
       .limit(data.limit);
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("catalog", error);
     return (rows as unknown as ProductRow[]).map(mapListItem);
   });
