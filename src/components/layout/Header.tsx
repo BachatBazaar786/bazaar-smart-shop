@@ -81,6 +81,14 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link to="/wishlist" className="cursor-pointer"><Heart className="h-4 w-4 mr-2" /> Wishlist</Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="cursor-pointer"><Shield className="h-4 w-4 mr-2" /> Admin dashboard</Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
                       <LogOut className="h-4 w-4 mr-2" /> Sign out
