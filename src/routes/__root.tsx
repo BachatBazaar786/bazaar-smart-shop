@@ -67,16 +67,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "BachatAtBazaar.pk — Shop Smart. Save More. Live Better." },
       { name: "description", content: "Pakistan's smart shopping marketplace. Premium Himalayan superfoods, wellness, electronics and home essentials with nationwide delivery." },
       { name: "author", content: "BachatAtBazaar.pk" },
-      { property: "og:title", content: "BachatAtBazaar.pk — Shop Smart. Save More. Live Better." },
-      { property: "og:description", content: "Pakistan's smart shopping marketplace. Premium Himalayan superfoods, wellness, electronics and home essentials with nationwide delivery." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "BachatAtBazaar.pk" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0a5548" },
-      { name: "twitter:title", content: "BachatAtBazaar.pk — Shop Smart. Save More. Live Better." },
-      { name: "twitter:description", content: "Pakistan's smart shopping marketplace. Premium Himalayan superfoods, wellness, electronics and home essentials with nationwide delivery." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/829d272f-8d74-4f85-9edf-97125a1eaba0" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/829d272f-8d74-4f85-9edf-97125a1eaba0" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -85,12 +79,40 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "BachatAtBazaar.pk",
+              url: "https://bazaar-smart-shop.lovable.app",
+              logo: "https://bazaar-smart-shop.lovable.app/favicon.ico",
+              sameAs: [],
+            },
+            {
+              "@type": "WebSite",
+              name: "BachatAtBazaar.pk",
+              url: "https://bazaar-smart-shop.lovable.app",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://bazaar-smart-shop.lovable.app/shop?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
+
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
