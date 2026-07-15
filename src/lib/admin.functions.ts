@@ -454,7 +454,7 @@ export const adjustStockAdmin = createServerFn({ method: "POST" })
       _product_id: data.product_id,
       _delta: data.delta,
       _reason: data.reason,
-      _note: data.note || null,
+      _note: data.note || undefined,
     });
     if (error) throw safeError("adjust_stock", error);
     return { stock: stock as number };
