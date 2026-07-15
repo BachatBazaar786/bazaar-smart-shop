@@ -416,7 +416,7 @@ export const updateOrderStatusAdmin = createServerFn({ method: "POST" })
       _order_id: data.order_id,
       _status: data.status,
       _payment_status: data.payment_status,
-      _note: data.note || null,
+      _note: data.note || "",
     });
     if (error) throw new Error(error.message);
     return { ok: true };
