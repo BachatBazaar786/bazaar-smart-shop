@@ -28,6 +28,13 @@ export function Header() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const checkAdmin = useServerFn(isCurrentUserAdmin);
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: () => checkAdmin(),
+    enabled: !!user,
+    staleTime: 5 * 60_000,
+  });
 
   const signOut = async () => {
     await qc.cancelQueries();
