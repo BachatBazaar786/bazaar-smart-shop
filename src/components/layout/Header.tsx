@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, Heart, ShoppingBag, User, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, Heart, ShoppingBag, User, ChevronDown, LogOut, LayoutDashboard, Shield } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { isCurrentUserAdmin } from "@/lib/orders.functions";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
@@ -26,6 +28,13 @@ export function Header() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const checkAdmin = useServerFn(isCurrentUserAdmin);
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: () => checkAdmin(),
+    enabled: !!user,
+    staleTime: 5 * 60_000,
+  });
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -72,6 +81,14 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link to="/wishlist" className="cursor-pointer"><Heart className="h-4 w-4 mr-2" /> Wishlist</Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="cursor-pointer"><Shield className="h-4 w-4 mr-2" /> Admin dashboard</Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
                       <LogOut className="h-4 w-4 mr-2" /> Sign out
