@@ -8,9 +8,16 @@ import { ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Cart — BachatAtBazaar.pk" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Your cart — BachatAtBazaar.pk" },
+      { name: "description", content: "Review the items in your BachatAtBazaar.pk cart, adjust quantities and continue to secure checkout." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: CartPage,
 });
+
 
 function CartPage() {
   const cart = useCart();

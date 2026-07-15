@@ -30,7 +30,17 @@ const categoriesQO = queryOptions({
 });
 
 export const Route = createFileRoute("/shop")({
-  head: () => ({ meta: [{ title: "Shop — BachatAtBazaar.pk" }, { name: "description", content: "Browse all products across categories at BachatAtBazaar.pk." }] }),
+  head: () => ({
+    meta: [
+      { title: "Shop all products — BachatAtBazaar.pk" },
+      { name: "description", content: "Browse the full BachatAtBazaar.pk catalogue — Himalayan superfoods, wellness and everyday essentials with filters, sorting and nationwide delivery." },
+      { property: "og:title", content: "Shop all products — BachatAtBazaar.pk" },
+      { property: "og:description", content: "Explore Himalayan buckwheat, sea buckthorn and wellness essentials — filter by category, price and rating." },
+      { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/shop" },
+    ],
+    links: [{ rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/shop" }],
+  }),
+
   validateSearch: searchSchema,
   loader: async ({ context }) => {
     await Promise.all([

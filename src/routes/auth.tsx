@@ -16,11 +16,12 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — BachatAtBazaar.pk" },
-      { name: "description", content: "Sign in or create an account to shop with BachatAtBazaar.pk." },
+      { title: "Sign in or create an account — BachatAtBazaar.pk" },
+      { name: "description", content: "Sign in to your BachatAtBazaar.pk account to track orders, save addresses and manage your wishlist — or create a new account in seconds." },
       { name: "robots", content: "noindex" },
     ],
   }),
+
   component: AuthPage,
 });
 
