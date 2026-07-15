@@ -5,13 +5,16 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About BachatAtBazaar.pk — Our Story" },
-      { name: "description", content: "Learn how BachatAtBazaar.pk brings premium Himalayan superfoods and smart everyday shopping to Pakistan." },
-      { property: "og:title", content: "About BachatAtBazaar.pk" },
+      { name: "description", content: "Learn how BachatAtBazaar.pk brings premium Himalayan superfoods and smart everyday shopping to Pakistan from the valleys of Gilgit-Baltistan." },
+      { property: "og:title", content: "About BachatAtBazaar.pk — Our Story" },
       { property: "og:description", content: "Pakistan's smart shopping marketplace, starting in the valleys of Gilgit-Baltistan." },
+      { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/about" },
     ],
+    links: [{ rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/about" }],
   }),
   component: About,
 });
+
 
 function About() {
   return (
