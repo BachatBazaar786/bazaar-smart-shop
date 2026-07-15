@@ -541,6 +541,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_order_status: {
+        Args: {
+          _note: string
+          _order_id: string
+          _payment_status: Database["public"]["Enums"]["payment_status"]
+          _status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
+      }
+      decrement_product_stock: {
+        Args: { _product_id: string; _qty: number }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -549,6 +562,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      refund_order_stock: { Args: { _order_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "customer" | "admin" | "super_admin"
