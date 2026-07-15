@@ -71,6 +71,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "BachatAtBazaar.pk" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0a5548" },
+      { name: "google-site-verification", content: "eo_kWFgwlaqyQM8cuB-kTAq7iqj2P_oefNzs1gZqQD4" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
