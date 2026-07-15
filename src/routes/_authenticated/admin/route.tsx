@@ -45,17 +45,23 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/analytics", label: "Analytics", icon: LayoutDashboard },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/products", label: "Products", icon: Package },
+  { to: "/admin/variants", label: "Variants", icon: Package },
   { to: "/admin/inventory", label: "Inventory", icon: Boxes },
   { to: "/admin/categories", label: "Categories", icon: FolderTree },
   { to: "/admin/brands", label: "Brands", icon: Building2 },
   { to: "/admin/tags", label: "Tags", icon: Tags },
+  { to: "/admin/coupons", label: "Coupons", icon: Tags },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/media", label: "Media", icon: ImageIcon },
+  { to: "/admin/blog", label: "Blog", icon: FileText },
   { to: "/admin/cms", label: "Content", icon: FileText },
+  { to: "/admin/page-builder", label: "Page builder", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
+
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

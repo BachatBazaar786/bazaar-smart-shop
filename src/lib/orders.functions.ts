@@ -45,7 +45,9 @@ const createOrderInput = z.object({
   shipping_address: shippingAddressSchema,
   payment_method: z.enum(["cod", "bank_transfer", "jazzcash", "easypaisa"]),
   notes: z.string().max(1000).optional().default(""),
+  coupon_code: z.string().max(40).optional().nullable(),
 });
+
 
 export const createOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -91,7 +93,28 @@ export const createOrder = createServerFn({ method: "POST" })
     });
 
     const shipping = subtotal >= 3000 ? 0 : 250;
-    const total = subtotal + shipping;
+
+    // Apply coupon (via SECURITY DEFINER RPC that validates limits, dates, min_order)
+    let discount = 0;
+    let couponId: string | null = null;
+    let couponCode: string | null = null;
+    if (data.coupon_code && data.coupon_code.trim()) {
+      const code = data.coupon_code.trim().toUpperCase();
+      const { data: vrows, error: vErr } = await supabase.rpc("validate_coupon", {
+        _code: code,
+        _subtotal: subtotal,
+      });
+      if (vErr) throw safeError("orders", vErr);
+      const v = (Array.isArray(vrows) ? vrows[0] : vrows) as
+        | { valid: boolean; message: string; discount: number | string; coupon_id: string | null }
+        | null;
+      if (!v?.valid) throw new Error(v?.message || "Coupon is not valid.");
+      discount = Math.min(Number(v.discount) || 0, subtotal);
+      couponId = v.coupon_id;
+      couponCode = code;
+    }
+
+    const total = Math.max(0, subtotal - discount) + shipping;
 
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -106,7 +129,9 @@ export const createOrder = createServerFn({ method: "POST" })
         status: "pending",
         subtotal,
         shipping,
-        discount: 0,
+        discount,
+        discount_total: discount,
+        coupon_code: couponCode,
         tax: 0,
         total,
         shipping_address: data.shipping_address,
@@ -115,6 +140,7 @@ export const createOrder = createServerFn({ method: "POST" })
       } as never)
       .select("id, order_number")
       .single();
+
     if (orderErr || !order) throw safeError("orders", orderErr, "Failed to create order.");
 
     const { error: itemsErr } = await supabase
@@ -146,10 +172,18 @@ export const createOrder = createServerFn({ method: "POST" })
       created_by: userId,
     } as never);
 
-
+    if (couponId) {
+      await supabase.from("coupon_redemptions").insert({
+        coupon_id: couponId,
+        order_id: order.id,
+        user_id: userId,
+        discount,
+      } as never);
+    }
 
     return { id: order.id, order_number: order.order_number };
   });
+
 
 
 export const listMyOrders = createServerFn({ method: "GET" })

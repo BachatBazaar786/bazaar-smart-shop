@@ -166,7 +166,15 @@ export function Header() {
                 {n.label}
               </Link>
             ))}
+            <Link
+              to="/blog"
+              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
+              activeProps={{ className: "text-primary" }}
+            >
+              Blog
+            </Link>
           </nav>
+
         </div>
       </header>
       <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
