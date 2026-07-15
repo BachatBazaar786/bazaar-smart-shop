@@ -279,13 +279,13 @@ export type AdminOrderRow = {
   created_at: string;
 };
 
-async function requireAdmin(supabase: {
-  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-}, userId: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function requireAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("is_admin", { _user_id: userId });
   if (error) throw new Error("Authorization check failed");
   if (data !== true) throw new Error("Not authorized");
 }
+
 
 export const listOrdersAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
