@@ -557,7 +557,7 @@ export const upsertSiteContentAdmin = createServerFn({ method: "POST" })
     await requireAdmin(context.supabase, context.userId);
     const { error } = await context.supabase.from("site_content").upsert({
       section_key: data.section_key,
-      data: data.data,
+      data: data.data as never,
       updated_by: context.userId,
       updated_at: new Date().toISOString(),
     });
@@ -579,7 +579,7 @@ export const upsertSiteSettingsAdmin = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ data: z.record(z.string(), z.unknown()) }).parse(input))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from("site_settings").upsert({ id: true, data: data.data, updated_by: context.userId, updated_at: new Date().toISOString() });
+    const { error } = await context.supabase.from("site_settings").upsert({ id: true, data: data.data as never, updated_by: context.userId, updated_at: new Date().toISOString() });
     if (error) throw safeError("site_settings_write", error);
     return { ok: true };
   });
