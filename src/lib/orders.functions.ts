@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import type { OrderSummary } from "@/types/catalog";
+import { safeError, escapePostgrestLiteral } from "./server-errors";
 
 function getPublicClient() {
   return createClient<Database>(
@@ -59,7 +60,7 @@ export const createOrder = createServerFn({ method: "POST" })
         "id, name, sku, price, sale_price, stock, status, product_images(url, sort_order)",
       )
       .in("id", productIds);
-    if (prodErr) throw new Error(prodErr.message);
+    if (prodErr) throw safeError("orders", prodErr);
     if (!products || products.length !== productIds.length)
       throw new Error("One or more products are unavailable.");
 
@@ -114,14 +115,14 @@ export const createOrder = createServerFn({ method: "POST" })
       } as never)
       .select("id, order_number")
       .single();
-    if (orderErr || !order) throw new Error(orderErr?.message ?? "Failed to create order.");
+    if (orderErr || !order) throw safeError("orders", orderErr, "Failed to create order.");
 
     const { error: itemsErr } = await supabase
       .from("order_items")
       .insert(lineItems.map((li) => ({ ...li, order_id: order.id })));
     if (itemsErr) {
       await supabase.from("orders").delete().eq("id", order.id);
-      throw new Error(itemsErr.message);
+      throw safeError("orders", itemsErr);
     }
 
     // Atomically decrement stock per line. Roll back the order if any line fails.
@@ -162,7 +163,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
     return data ?? [];
   });
 
@@ -181,7 +182,7 @@ export const getMyOrder = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .eq("order_number", data.order_number)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
     if (!order) return null;
     const o = order as unknown as {
       id: string;
@@ -228,7 +229,7 @@ export const trackOrderPublic = createServerFn({ method: "POST" })
       _order_number: data.order_number,
       _email: data.email,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
     const row = Array.isArray(rows) ? rows[0] : null;
     if (!row) return { found: false as const };
     return {
@@ -318,7 +319,7 @@ export const listOrdersAdmin = createServerFn({ method: "POST" })
     }
 
     const { data: rows, error } = await query;
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
 
     return (rows ?? []).map((r) => {
       const addr = (r as { shipping_address: { full_name?: string } | null }).shipping_address;
@@ -354,7 +355,7 @@ export const getOrderAdmin = createServerFn({ method: "POST" })
       )
       .eq("order_number", data.order_number)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
     if (!order) return null;
 
     const o = order as unknown as {
@@ -415,7 +416,7 @@ export const updateOrderStatusAdmin = createServerFn({ method: "POST" })
       _payment_status: data.payment_status,
       _note: data.note || "",
     });
-    if (error) throw new Error(error.message);
+    if (error) throw safeError("orders", error);
     return { ok: true };
   });
 
