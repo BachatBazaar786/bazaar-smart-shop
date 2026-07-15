@@ -142,8 +142,9 @@ export const createOrder = createServerFn({ method: "POST" })
       order_id: order.id,
       status: "pending",
       note: "Order placed by customer",
-      changed_by: userId,
+      created_by: userId,
     } as never);
+
 
 
     return { id: order.id, order_number: order.order_number };
