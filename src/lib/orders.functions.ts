@@ -312,10 +312,10 @@ export const listOrdersAdmin = createServerFn({ method: "POST" })
     if (data.status) query = query.eq("status", data.status);
     if (data.payment_status) query = query.eq("payment_status", data.payment_status);
     if (data.search) {
-      const s = data.search.trim();
-      query = query.or(
-        `order_number.ilike.%${s}%,email.ilike.%${s}%`,
-      );
+      const s = escapePostgrestLiteral(data.search);
+      if (s) {
+        query = query.or(`order_number.ilike.%${s}%,email.ilike.%${s}%`);
+      }
     }
 
     const { data: rows, error } = await query;
