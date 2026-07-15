@@ -3,11 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import type {
-import { safeError, escapePostgrestLiteral } from "./server-errors";
   CategoryItem,
   ProductDetail,
   ProductListItem,
 } from "@/types/catalog";
+import { safeError, escapePostgrestLiteral } from "./server-errors";
 
 function getPublicClient() {
   return createClient<Database>(
