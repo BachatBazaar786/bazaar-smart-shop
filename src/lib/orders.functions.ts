@@ -119,10 +119,35 @@ export const createOrder = createServerFn({ method: "POST" })
     const { error: itemsErr } = await supabase
       .from("order_items")
       .insert(lineItems.map((li) => ({ ...li, order_id: order.id })));
-    if (itemsErr) throw new Error(itemsErr.message);
+    if (itemsErr) {
+      await supabase.from("orders").delete().eq("id", order.id);
+      throw new Error(itemsErr.message);
+    }
+
+    // Atomically decrement stock per line. Roll back the order if any line fails.
+    for (const li of lineItems) {
+      const { data: ok, error: decErr } = await supabase.rpc(
+        "decrement_product_stock",
+        { _product_id: li.product_id, _qty: li.quantity },
+      );
+      if (decErr || ok !== true) {
+        await supabase.from("orders").delete().eq("id", order.id);
+        throw new Error(
+          `Sorry, "${li.name_snapshot}" just went out of stock. Please try again.`,
+        );
+      }
+    }
+
+    await supabase.from("order_status_history").insert({
+      order_id: order.id,
+      status: "pending",
+      note: "Order placed by customer",
+      changed_by: userId,
+    });
 
     return { id: order.id, order_number: order.order_number };
   });
+
 
 export const listMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
