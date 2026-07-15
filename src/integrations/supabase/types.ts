@@ -79,24 +79,36 @@ export type Database = {
       }
       brands: {
         Row: {
+          banner_url: string | null
           created_at: string
+          description: string | null
           id: string
           logo_url: string | null
           name: string
+          seo_description: string | null
+          seo_title: string | null
           slug: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
         }
         Relationships: []
@@ -109,6 +121,9 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          parent_id: string | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           sort_order: number
           updated_at: string
@@ -120,6 +135,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          parent_id?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           sort_order?: number
           updated_at?: string
@@ -131,11 +149,22 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          parent_id?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           sort_order?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_messages: {
         Row: {
@@ -164,6 +193,30 @@ export type Database = {
           message?: string
           name?: string
           subject?: string | null
+        }
+        Relationships: []
+      }
+      customer_notes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -395,6 +448,36 @@ export type Database = {
           },
         ]
       }
+      product_tags: {
+        Row: {
+          product_id: string
+          tag_id: string
+        }
+        Insert: {
+          product_id: string
+          tag_id: string
+        }
+        Update: {
+          product_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tags_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           benefits: string[]
@@ -515,6 +598,107 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content: {
+        Row: {
+          data: Json
+          section_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          data?: Json
+          section_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          data?: Json
+          section_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          data: Json
+          id: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          data?: Json
+          id?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          data?: Json
+          id?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta: number
+          id: string
+          note: string | null
+          product_id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          id?: string
+          note?: string | null
+          product_id: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          id?: string
+          note?: string | null
+          product_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -541,6 +725,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_stock: {
+        Args: {
+          _delta: number
+          _note?: string
+          _product_id: string
+          _reason: string
+        }
+        Returns: number
+      }
+      admin_dashboard_stats: { Args: never; Returns: Json }
+      admin_list_customers: {
+        Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          order_count: number
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
+          total_spent: number
+        }[]
+      }
       admin_update_order_status: {
         Args: {
           _note: string
