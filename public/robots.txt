@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /auth
+Disallow: /account
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /order-confirmation
+
+Sitemap: https://bazaar-smart-shop.lovable.app/sitemap.xml

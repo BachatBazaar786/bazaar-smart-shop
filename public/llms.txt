@@ -1,0 +1,20 @@
+# BachatAtBazaar.pk
+
+> Pakistan's smart shopping marketplace — premium Himalayan superfoods, wellness products and everyday essentials with nationwide delivery.
+
+BachatAtBazaar.pk brings carefully selected quality products from across Pakistan and beyond, starting with premium Himalayan superfoods (buckwheat, sea buckthorn) and growing into a full everyday marketplace. Nationwide delivery, cash on delivery and popular digital wallets supported.
+
+## Pages
+
+- [Home](/): Featured products, categories and current deals.
+- [Shop](/shop): Full product catalogue with filters and sorting.
+- [About](/about): Our story and mission.
+- [Contact](/contact): Reach the team by email, phone or WhatsApp.
+- [FAQs](/faqs): Ordering, payments, shipping and returns.
+- [Track order](/track-order): Look up an order by number and email.
+
+## Categories
+
+- [Himalayan Buckwheat](/category/himalayan-buckwheat): Stone-milled buckwheat flour, groats and tea from Gilgit-Baltistan.
+- [Sea Buckthorn](/category/sea-buckthorn): Wild-harvested sea buckthorn juices, oils and superfood products.
+- [Wellness & Superfoods](/category/wellness-superfoods): Everyday wellness essentials sourced with care.

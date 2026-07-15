@@ -35,7 +35,14 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "BachatAtBazaar.pk — Shop Smart. Save More. Live Better." },
-      { name: "description", content: "Pakistan's smart shopping marketplace. Premium Himalayan superfoods, wellness, electronics and home essentials with nationwide delivery." },
+      { name: "description", content: "Shop premium Himalayan buckwheat, sea buckthorn and wellness essentials. Nationwide delivery across Pakistan with cash on delivery and digital wallets." },
+      { property: "og:title", content: "BachatAtBazaar.pk — Pakistan's Smart Marketplace" },
+      { property: "og:description", content: "Premium Himalayan superfoods, wellness and everyday essentials — carefully selected, smartly priced and delivered nationwide." },
+      { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/" },
+      { rel: "preload", as: "image", href: "https://picsum.photos/seed/hero-buckwheat/700/900", fetchpriority: "high" },
     ],
   }),
   loader: async ({ context }) => {
@@ -52,6 +59,7 @@ export const Route = createFileRoute("/")({
   ),
   component: Home,
 });
+
 
 function Home() {
   const recent = useRecentlyViewed();
@@ -102,7 +110,7 @@ function Home() {
           <div className="relative">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-3">
-                <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-buckwheat/700/900" alt="Himalayan buckwheat" className="h-full w-full object-cover" /></div>
+                <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-buckwheat/700/900" alt="Himalayan buckwheat" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
                 <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-tea/700/700" alt="Buckwheat tea" className="h-full w-full object-cover" /></div>
               </div>
               <div className="space-y-3 pt-8">

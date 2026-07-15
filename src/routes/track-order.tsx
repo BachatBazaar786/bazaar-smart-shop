@@ -10,14 +10,17 @@ import { formatPKR } from "@/lib/format";
 export const Route = createFileRoute("/track-order")({
   head: () => ({
     meta: [
-      { title: "Track Your Order — BachatAtBazaar.pk" },
-      { name: "description", content: "Track the status of your BachatAtBazaar order using your order number and email." },
-      { property: "og:title", content: "Track Your Order — BachatAtBazaar.pk" },
-      { property: "og:description", content: "Track the status of your BachatAtBazaar order using your order number and email." },
+      { title: "Track your order — BachatAtBazaar.pk" },
+      { name: "description", content: "Check the live status of your BachatAtBazaar.pk order using your order number and the email you placed it with." },
+      { property: "og:title", content: "Track your order — BachatAtBazaar.pk" },
+      { property: "og:description", content: "Look up your BachatAtBazaar order status with your order number and email." },
+      { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/track-order" },
     ],
+    links: [{ rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/track-order" }],
   }),
   component: TrackOrderPage,
 });
+
 
 function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");

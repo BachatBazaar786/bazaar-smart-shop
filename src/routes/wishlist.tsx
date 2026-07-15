@@ -6,9 +6,16 @@ import { Heart } from "lucide-react";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 
 export const Route = createFileRoute("/wishlist")({
-  head: () => ({ meta: [{ title: "Wishlist — BachatAtBazaar.pk" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Your wishlist — BachatAtBazaar.pk" },
+      { name: "description", content: "Save products you love to your BachatAtBazaar.pk wishlist and come back to buy them later." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: WishlistPage,
 });
+
 
 function WishlistPage() {
   const wishlist = useWishlist();

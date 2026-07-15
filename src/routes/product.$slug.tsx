@@ -32,15 +32,56 @@ export const Route = createFileRoute("/product/$slug")({
     context.queryClient.ensureQueryData(relatedQO(params.slug));
     return { product };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData ? [
-      { title: `${loaderData.product.name} — BachatAtBazaar.pk` },
-      { name: "description", content: loaderData.product.shortDescription },
-      { property: "og:title", content: loaderData.product.name },
-      { property: "og:description", content: loaderData.product.shortDescription },
-      { property: "og:image", content: loaderData.product.images[0] },
-    ] : [{ title: "Product not found" }, { name: "robots", content: "noindex" }],
-  }),
+  head: ({ params, loaderData }) => {
+    if (!loaderData) {
+      return { meta: [{ title: "Product not found" }, { name: "robots", content: "noindex" }] };
+    }
+    const p = loaderData.product;
+    const url = `https://bazaar-smart-shop.lovable.app/product/${params.slug}`;
+    const price = p.salePrice ?? p.price;
+    return {
+      meta: [
+        { title: `${p.name} — BachatAtBazaar.pk` },
+        { name: "description", content: p.shortDescription },
+        { property: "og:type", content: "product" },
+        { property: "og:title", content: `${p.name} — BachatAtBazaar.pk` },
+        { property: "og:description", content: p.shortDescription },
+        { property: "og:url", content: url },
+        { property: "og:image", content: p.images[0] },
+        { name: "twitter:image", content: p.images[0] },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.name,
+            description: p.shortDescription,
+            image: p.images,
+            sku: p.id,
+            ...(p.category ? { category: p.category.name } : {}),
+            aggregateRating: p.reviewCount > 0 ? {
+              "@type": "AggregateRating",
+              ratingValue: p.rating,
+              reviewCount: p.reviewCount,
+            } : undefined,
+            offers: {
+              "@type": "Offer",
+              url,
+              priceCurrency: "PKR",
+              price: price,
+              availability: p.stock > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+            },
+          }),
+        },
+      ],
+    };
+  },
+
   notFoundComponent: () => (
     <div className="container-page py-24 text-center">
       <h1 className="font-display text-3xl font-bold">Product not found</h1>
@@ -106,10 +147,17 @@ function ProductPage() {
           {product.images.length > 1 && (
             <div className="mt-3 grid grid-cols-5 gap-2">
               {product.images.map((img: string, i: number) => (
-                <button key={i} onClick={() => setActiveImage(i)} className={`aspect-square rounded-md overflow-hidden border-2 ${i === activeImage ? "border-primary" : "border-transparent"}`}>
+                <button
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  aria-label={`Show image ${i + 1} of ${product.images.length}`}
+                  aria-pressed={i === activeImage}
+                  className={`aspect-square rounded-md overflow-hidden border-2 ${i === activeImage ? "border-primary" : "border-transparent"}`}
+                >
                   <img src={img} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
+
             </div>
           )}
         </div>

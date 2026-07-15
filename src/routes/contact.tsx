@@ -10,14 +10,17 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — BachatAtBazaar.pk" },
-      { name: "description", content: "Get in touch with BachatAtBazaar.pk. We're here to help with orders, products and partnerships." },
+      { title: "Contact BachatAtBazaar.pk — Support & Partnerships" },
+      { name: "description", content: "Get in touch with BachatAtBazaar.pk by email, phone or WhatsApp. Nationwide support across Pakistan for orders, products and partnerships." },
       { property: "og:title", content: "Contact BachatAtBazaar.pk" },
       { property: "og:description", content: "Reach us by email, phone or WhatsApp. Nationwide support across Pakistan." },
+      { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/contact" },
     ],
+    links: [{ rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/contact" }],
   }),
   component: ContactPage,
 });
+
 
 function ContactPage() {
   const [sent, setSent] = useState(false);

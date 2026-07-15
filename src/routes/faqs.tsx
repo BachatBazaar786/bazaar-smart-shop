@@ -3,14 +3,38 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { faqCategories } from "@/data/faqs";
 
 export const Route = createFileRoute("/faqs")({
-  head: () => ({
-    meta: [
-      { title: "FAQs — BachatAtBazaar.pk" },
-      { name: "description", content: "Answers to common questions about ordering, payments, shipping and returns at BachatAtBazaar.pk." },
-    ],
-  }),
+  head: () => {
+    const url = "https://bazaar-smart-shop.lovable.app/faqs";
+    return {
+      meta: [
+        { title: "FAQs — BachatAtBazaar.pk" },
+        { name: "description", content: "Answers to common questions about ordering, payments, shipping and returns at BachatAtBazaar.pk." },
+        { property: "og:title", content: "Frequently Asked Questions — BachatAtBazaar.pk" },
+        { property: "og:description", content: "How ordering, payments, shipping and returns work at BachatAtBazaar.pk." },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqCategories.flatMap((c) =>
+              c.items.map((i) => ({
+                "@type": "Question",
+                name: i.q,
+                acceptedAnswer: { "@type": "Answer", text: i.a },
+              })),
+            ),
+          }),
+        },
+      ],
+    };
+  },
   component: FaqsPage,
 });
+
 
 function FaqsPage() {
   return (

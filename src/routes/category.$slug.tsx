@@ -21,17 +21,26 @@ export const Route = createFileRoute("/category/$slug")({
     context.queryClient.ensureQueryData(categoryProductsQO(params.slug));
     return { category };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.category.name} — BachatAtBazaar.pk` },
-          { name: "description", content: loaderData.category.description ?? loaderData.category.name },
-          { property: "og:title", content: loaderData.category.name },
-          { property: "og:description", content: loaderData.category.description ?? loaderData.category.name },
-          ...(loaderData.category.image_url ? [{ property: "og:image", content: loaderData.category.image_url }] : []),
-        ]
-      : [{ title: "Category not found" }, { name: "robots", content: "noindex" }],
-  }),
+  head: ({ params, loaderData }) => {
+    if (!loaderData) {
+      return { meta: [{ title: "Category not found" }, { name: "robots", content: "noindex" }] };
+    }
+    const c = loaderData.category;
+    const url = `https://bazaar-smart-shop.lovable.app/category/${params.slug}`;
+    const desc = c.description ?? `Shop ${c.name} at BachatAtBazaar.pk — carefully selected, smartly priced.`;
+    return {
+      meta: [
+        { title: `${c.name} — BachatAtBazaar.pk` },
+        { name: "description", content: desc },
+        { property: "og:title", content: `${c.name} — BachatAtBazaar.pk` },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        ...(c.image_url ? [{ property: "og:image", content: c.image_url }] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
+
   notFoundComponent: () => (
     <div className="container-page py-24 text-center">
       <h1 className="font-display text-3xl font-bold">Category not found</h1>
