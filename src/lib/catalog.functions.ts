@@ -245,7 +245,8 @@ export const searchProducts = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ProductListItem[]> => {
     if (!data.q.trim()) return [];
     const supabase = getPublicClient();
-    const s = data.q.trim().replace(/[%_]/g, "");
+    const s = escapePostgrestLiteral(data.q);
+    if (!s) return [];
     const { data: rows, error } = await supabase
       .from("products")
       .select(
