@@ -516,7 +516,8 @@ export const updateOrderStatusAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await requireAdmin(supabase, userId);
-    const { error } = await supabase.rpc("admin_update_order_status", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("admin_update_order_status", {
       _order_id: data.order_id,
       _status: data.status,
       _payment_status: data.payment_status,
