@@ -18,7 +18,30 @@ export const Route = createFileRoute("/contact")({
       { property: "og:url", content: "https://bazaar-smart-shop.lovable.app/contact" },
     ],
     links: [{ rel: "canonical", href: "https://bazaar-smart-shop.lovable.app/contact" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: "BachatAtBazaar.pk",
+        url: "https://bazaar-smart-shop.lovable.app/contact",
+        email: "support@bachatatbazaar.pk",
+        telephone: "+92-312-1007009",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Rawalpindi",
+          addressCountry: "PK",
+        },
+        openingHoursSpecification: [{
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          opens: "10:00",
+          closes: "19:00",
+        }],
+      }),
+    }],
   }),
+
   component: ContactPage,
 });
 
