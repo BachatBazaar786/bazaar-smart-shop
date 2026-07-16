@@ -1,0 +1,1 @@
+UPDATE public.site_settings SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{logo_url}', to_jsonb('/__l5e/assets-v1/be445000-a12d-451a-9c31-c18ff252c47f/logo-transparent.png'::text), true);
