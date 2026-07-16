@@ -387,7 +387,8 @@ export const listCustomersAdmin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: rows, error } = await context.supabase.rpc("admin_list_customers", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("admin_list_customers", {
       _search: data.search,
       _limit: data.limit,
       _offset: 0,
