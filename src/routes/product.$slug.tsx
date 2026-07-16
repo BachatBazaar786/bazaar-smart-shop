@@ -296,7 +296,7 @@ function ProductPage() {
           </TabsContent>
           {product.usage && (
             <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
-              <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.usage }} />
+              <div className="prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.usage) }} />
             </TabsContent>
           )}
           <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
