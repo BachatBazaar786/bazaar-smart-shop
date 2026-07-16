@@ -514,8 +514,13 @@ export const updateOrderStatusAdmin = createServerFn({ method: "POST" })
 export const isCurrentUserAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.rpc("is_admin", {
-      _user_id: context.userId,
-    });
-    return data === true;
+    const { data, error } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .in("role", ["admin", "super_admin"])
+      .limit(1);
+
+    if (error) throw safeError("orders", error, "Unable to check admin access.");
+    return (data?.length ?? 0) > 0;
   });
