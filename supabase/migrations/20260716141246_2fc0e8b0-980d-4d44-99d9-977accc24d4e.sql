@@ -1,0 +1,1 @@
+UPDATE public.site_settings SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{logo_url}', to_jsonb('/__l5e/assets-v1/af964c9a-723e-4c72-a33b-19d9f2d00bd3/bachat-logo-full.png'::text));
