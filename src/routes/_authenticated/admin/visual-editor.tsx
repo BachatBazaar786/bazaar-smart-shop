@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Puck } from "@measured/puck";
-import "@measured/puck/puck.css";
+import "@/styles/puck.css";
 import { AdminPageHeader } from "@/components/admin/AdminUI";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
