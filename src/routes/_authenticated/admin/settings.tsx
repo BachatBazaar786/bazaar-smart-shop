@@ -12,6 +12,10 @@ type Settings = {
   site_name?: string;
   tagline?: string;
   logo_url?: string;
+  favicon_url?: string;
+  whatsapp_number?: string;
+  whatsapp_message?: string;
+  notification_email?: string;
   currency?: string;
   currency_symbol?: string;
   shipping_flat?: string;
