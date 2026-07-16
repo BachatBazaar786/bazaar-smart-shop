@@ -23,6 +23,27 @@ const SECTIONS: { key: string; label: string; description: string; fields: { key
     ],
   },
   {
+    key: "hero_gallery",
+    label: "Homepage hero image gallery",
+    description: "The 4-image collage shown on the home page hero (used when Hero image URL above is empty). Paste image URLs from Media library.",
+    fields: [
+      { key: "image_1", label: "Image 1 (top-left, tall)", type: "url" },
+      { key: "image_2", label: "Image 2 (bottom-left, square)", type: "url" },
+      { key: "image_3", label: "Image 3 (top-right, square)", type: "url" },
+      { key: "image_4", label: "Image 4 (bottom-right, tall)", type: "url" },
+    ],
+  },
+  {
+    key: "home_promo",
+    label: "Homepage promo banner",
+    description: "The green 'Launch collection' banner on the home page.",
+    fields: [
+      { key: "title", label: "Title", type: "text" },
+      { key: "subtitle", label: "Subtitle", type: "textarea" },
+      { key: "image_url", label: "Banner image URL", type: "url" },
+    ],
+  },
+  {
     key: "announcement",
     label: "Announcement bar",
     description: "Top strip messages (one per line).",
@@ -42,10 +63,12 @@ const SECTIONS: { key: string; label: string; description: string; fields: { key
   {
     key: "about_page",
     label: "About page",
-    description: "About Us content.",
+    description: "About Us content and images.",
     fields: [
       { key: "title", label: "Title", type: "text" },
       { key: "body", label: "Body (markdown)", type: "textarea" },
+      { key: "hero_image", label: "Hero image URL (Our Story)", type: "url" },
+      { key: "mission_image", label: "Mission image URL", type: "url" },
     ],
   },
   {

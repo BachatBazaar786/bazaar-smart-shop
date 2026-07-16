@@ -66,6 +66,8 @@ export const Route = createFileRoute("/")({
 function Home() {
   const recent = useRecentlyViewed();
   const hero = useSiteSection("hero");
+  const gallery = useSiteSection("hero_gallery");
+  const promo = useSiteSection("home_promo");
   const { data: categories } = useSuspenseQuery(categoriesQO);
   const { data: featured } = useSuspenseQuery(featuredQO);
   const { data: bestSellers } = useSuspenseQuery(bestSellersQO);
@@ -80,6 +82,13 @@ function Home() {
   const heroCtaLabel = (hero.cta_label as string | undefined)?.trim() || "Shop Now";
   const heroCtaHref = (hero.cta_href as string | undefined)?.trim() || "/shop";
   const heroImage = (hero.image_url as string | undefined)?.trim();
+  const g1 = (gallery.image_1 as string | undefined)?.trim() || "https://picsum.photos/seed/hero-buckwheat/700/900";
+  const g2 = (gallery.image_2 as string | undefined)?.trim() || "https://picsum.photos/seed/hero-tea/700/700";
+  const g3 = (gallery.image_3 as string | undefined)?.trim() || "https://picsum.photos/seed/hero-mountains/700/700";
+  const g4 = (gallery.image_4 as string | undefined)?.trim() || "https://picsum.photos/seed/hero-seabuckthorn/700/900";
+  const promoImage = (promo.image_url as string | undefined)?.trim() || "https://picsum.photos/seed/promo-collection/900/600";
+  const promoTitle = (promo.title as string | undefined)?.trim() || "From the mountains of Gilgit-Baltistan to your home";
+  const promoSubtitle = (promo.subtitle as string | undefined)?.trim() || "Stone-milled Himalayan buckwheat and wild-harvested sea buckthorn — sourced with care, packed for freshness, delivered across Pakistan.";
 
   return (
     <div>
@@ -134,12 +143,12 @@ function Home() {
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-3">
-                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-buckwheat/700/900" alt="Himalayan buckwheat" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-tea/700/700" alt="Buckwheat tea" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g1} alt="Hero 1" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g2} alt="Hero 2" className="h-full w-full object-cover" /></div>
                 </div>
                 <div className="space-y-3 pt-8">
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-mountains/700/700" alt="Gilgit-Baltistan mountains" className="h-full w-full object-cover" /></div>
-                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-seabuckthorn/700/900" alt="Sea buckthorn" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g3} alt="Hero 3" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g4} alt="Hero 4" className="h-full w-full object-cover" /></div>
                 </div>
               </div>
             )}
@@ -169,14 +178,14 @@ function Home() {
           <div className="grid lg:grid-cols-2 gap-8 p-8 md:p-12 items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1 text-xs uppercase tracking-wide"><Mountain className="h-3.5 w-3.5" /> Launch collection</div>
-              <h2 className="mt-4 font-display text-3xl md:text-4xl font-bold leading-tight">From the mountains of Gilgit-Baltistan to your home</h2>
-              <p className="mt-3 text-primary-foreground/85 max-w-lg">Stone-milled Himalayan buckwheat and wild-harvested sea buckthorn — sourced with care, packed for freshness, delivered across Pakistan.</p>
+              <h2 className="mt-4 font-display text-3xl md:text-4xl font-bold leading-tight">{promoTitle}</h2>
+              <p className="mt-3 text-primary-foreground/85 max-w-lg">{promoSubtitle}</p>
               <Link to="/category/$slug" params={{ slug: firstCat }} className="mt-6 inline-flex items-center gap-2 rounded-md bg-savings text-savings-foreground px-6 py-3 text-sm font-semibold hover:opacity-90 transition-opacity">
                 Explore the collection <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
             <div className="hidden lg:block relative">
-              <img src="https://picsum.photos/seed/promo-collection/900/600" alt="Launch collection" className="rounded-lg w-full h-full object-cover" />
+              <img src={promoImage} alt="Launch collection" className="rounded-lg w-full h-full object-cover" />
             </div>
           </div>
         </div>
