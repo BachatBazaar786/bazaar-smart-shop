@@ -1,18 +1,35 @@
 import { Link } from "@tanstack/react-router";
+import { useSiteSettings } from "@/context/SiteContext";
 
 export function Logo({ compact = false }: { compact?: boolean }) {
+  const { site_name, tagline, logo_url } = useSiteSettings();
+  const name = site_name?.trim() || "BachatAtBazaar.pk";
+  const sub = tagline?.trim() || "Shop Smart. Save More.";
+  const initial = name.charAt(0).toUpperCase();
+
   return (
-    <Link to="/" className="flex items-center gap-2 group" aria-label="BachatAtBazaar.pk home">
-      <span className="grid place-items-center h-9 w-9 rounded-md bg-primary text-primary-foreground font-display text-lg font-bold shadow-sm">
-        B
-      </span>
+    <Link to="/" className="flex items-center gap-2 group" aria-label={`${name} home`}>
+      {logo_url ? (
+        <img src={logo_url} alt={name} className="h-9 w-9 rounded-md object-cover shadow-sm" />
+      ) : (
+        <span className="grid place-items-center h-9 w-9 rounded-md bg-primary text-primary-foreground font-display text-lg font-bold shadow-sm">
+          {initial}
+        </span>
+      )}
       {!compact && (
         <span className="flex flex-col leading-none">
           <span className="font-display text-lg font-bold tracking-tight text-foreground">
-            BachatAtBazaar<span className="text-savings">.pk</span>
+            {name.includes(".") ? (
+              <>
+                {name.split(".")[0]}
+                <span className="text-savings">.{name.split(".").slice(1).join(".")}</span>
+              </>
+            ) : (
+              name
+            )}
           </span>
           <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mt-0.5">
-            Shop Smart. Save More.
+            {sub}
           </span>
         </span>
       )}
