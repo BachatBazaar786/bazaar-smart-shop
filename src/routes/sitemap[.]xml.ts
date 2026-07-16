@@ -18,11 +18,13 @@ export const Route = createFileRoute("/sitemap.xml")({
         const staticEntries: SitemapEntry[] = [
           { path: "/", changefreq: "daily", priority: "1.0" },
           { path: "/shop", changefreq: "daily", priority: "0.9" },
+          { path: "/blog", changefreq: "weekly", priority: "0.6" },
           { path: "/about", changefreq: "monthly", priority: "0.6" },
           { path: "/contact", changefreq: "monthly", priority: "0.5" },
           { path: "/faqs", changefreq: "monthly", priority: "0.5" },
           { path: "/track-order", changefreq: "yearly", priority: "0.3" },
         ];
+
 
         let dynamic: SitemapEntry[] = [];
         try {
