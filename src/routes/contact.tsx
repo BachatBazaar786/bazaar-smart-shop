@@ -53,10 +53,10 @@ function ContactPage() {
 
         <aside className="space-y-4">
           {[
-            { icon: Mail, label: "Email", value: "hello@bachatatbazaar.pk" },
-            { icon: Phone, label: "Phone", value: "+92 300 000 0000" },
-            { icon: MessageCircle, label: "WhatsApp", value: "+92 300 000 0000" },
-            { icon: MapPin, label: "Address", value: "Karachi, Pakistan" },
+            { icon: Mail, label: "Email", value: "support@bachatatbazaar.pk" },
+            { icon: Phone, label: "Phone", value: "+92 312 1007009" },
+            { icon: MessageCircle, label: "WhatsApp", value: "+92 312 1007009" },
+            { icon: MapPin, label: "Address", value: "Rawalpindi, Pakistan" },
           ].map((c) => (
             <div key={c.label} className="rounded-lg border border-border bg-card p-4 flex items-start gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary shrink-0"><c.icon className="h-5 w-5" /></div>
