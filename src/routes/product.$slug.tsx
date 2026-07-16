@@ -193,7 +193,7 @@ function ProductPage() {
             <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
           </div>
           <div className="mt-5"><Price price={displayPrice} salePrice={displaySale ?? undefined} size="lg" /></div>
-          <div className="mt-4 text-muted-foreground prose-content" dangerouslySetInnerHTML={{ __html: product.shortDescription || "" }} />
+          <div className="mt-4 text-muted-foreground prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.shortDescription || "") }} />
 
           {variants.data && variants.data.length > 0 && (
             <div className="mt-5">
