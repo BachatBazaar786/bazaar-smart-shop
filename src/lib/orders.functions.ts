@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
 import type { OrderSummary } from "@/types/catalog";
 import { safeError, escapePostgrestLiteral } from "./server-errors";
 import { sendTemplateEmail } from "./email-templates/send-email";
@@ -10,20 +8,6 @@ import { sendTemplateEmail } from "./email-templates/send-email";
 const ADMIN_EMAIL = "bachatatbazaar.pk@gmail.com";
 const SITE_URL = "https://bachatatbazaar.pk";
 const SITE_NAME = "BachatAtBazaar.pk";
-
-function getPublicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    {
-      auth: {
-        storage: undefined,
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    },
-  );
-}
 
 const shippingAddressSchema = z.object({
   full_name: z.string().min(1).max(120),
