@@ -42,12 +42,12 @@ export type SiteSettings = {
 
 export type SiteBootstrap = {
   settings: SiteSettings;
-  sections: Record<string, Record<string, unknown>>;
+  sections: Record<string, Record<string, string | number | boolean | null | NavItem[]>>;
   navigation: NavItem[];
 };
 
 export const getSiteBootstrap = createServerFn({ method: "GET" }).handler(
-  async (): Promise<SiteBootstrap> => {
+  async () => {
     const s = getPublicClient();
     const [settingsRes, contentRes] = await Promise.all([
       s.from("site_settings").select("data").maybeSingle(),
@@ -56,9 +56,9 @@ export const getSiteBootstrap = createServerFn({ method: "GET" }).handler(
     if (settingsRes.error) throw safeError("site_settings_pub", settingsRes.error);
     if (contentRes.error) throw safeError("site_content_pub", contentRes.error);
 
-    const sections: Record<string, Record<string, unknown>> = {};
+    const sections: Record<string, Record<string, string | number | boolean | null | NavItem[]>> = {};
     for (const row of contentRes.data ?? []) {
-      sections[row.section_key as string] = (row.data ?? {}) as Record<string, unknown>;
+      sections[row.section_key as string] = (row.data ?? {}) as Record<string, string | number | boolean | null | NavItem[]>;
     }
 
     const navRaw = sections["navigation"]?.items;
@@ -68,10 +68,8 @@ export const getSiteBootstrap = createServerFn({ method: "GET" }).handler(
           .slice(0, 20)
       : [];
 
-    return {
-      settings: ((settingsRes.data?.data ?? {}) as SiteSettings) ?? {},
-      sections,
-      navigation,
-    };
+    const settings = ((settingsRes.data?.data ?? {}) as SiteSettings);
+    return { settings, sections, navigation } satisfies SiteBootstrap;
   },
 );
+
