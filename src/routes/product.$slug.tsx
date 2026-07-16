@@ -279,7 +279,7 @@ function ProductPage() {
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
-            <p className="whitespace-pre-line">{product.description}</p>
+            <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.description || "" }} />
           </TabsContent>
           <TabsContent value="specs">
             {product.specifications.length > 0 ? (
@@ -294,7 +294,9 @@ function ProductPage() {
             ) : <p className="text-sm text-muted-foreground">No specifications listed.</p>}
           </TabsContent>
           {product.usage && (
-            <TabsContent value="usage" className="max-w-3xl text-muted-foreground"><p>{product.usage}</p></TabsContent>
+            <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
+              <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.usage }} />
+            </TabsContent>
           )}
           <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
             <p><strong className="text-foreground">Delivery:</strong> We deliver across Pakistan within 2–5 working days depending on your city.</p>
