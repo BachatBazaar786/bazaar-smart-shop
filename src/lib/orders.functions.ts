@@ -105,7 +105,8 @@ export const createOrder = createServerFn({ method: "POST" })
     let couponCode: string | null = null;
     if (data.coupon_code && data.coupon_code.trim()) {
       const code = data.coupon_code.trim().toUpperCase();
-      const { data: vrows, error: vErr } = await supabase.rpc("validate_coupon", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: vrows, error: vErr } = await supabaseAdmin.rpc("validate_coupon", {
         _code: code,
         _subtotal: subtotal,
       });
