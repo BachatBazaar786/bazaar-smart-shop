@@ -8,7 +8,7 @@ import { formatPKR } from "@/lib/format";
 import { Search, Download } from "lucide-react";
 import Papa from "papaparse";
 
-export const Route = createFileRoute("/_authenticated/admin/orders")({ component: OrdersPage });
+export const Route = createFileRoute("/_authenticated/admin/orders/")({ component: OrdersPage });
 
 const STATUS = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"] as const;
 const PAY = ["unpaid", "awaiting_verification", "paid", "failed", "refunded"] as const;
