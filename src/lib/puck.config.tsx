@@ -225,19 +225,19 @@ export const puckConfig: Config<Blocks> = {
 };
 
 function ProductGridBlock({ title, filter, limit }: ProductGridBlockProps) {
-  const params: Parameters<typeof listProducts>[0] = { data: { limit } };
-  if (filter === "featured") params.data!.featured = true;
-  if (filter === "bestSeller") params.data!.bestSeller = true;
-  if (filter === "newArrival") params.data!.newArrival = true;
-  if (filter === "onDeal") params.data!.onDeal = true;
+  const filters: Record<string, boolean> = {};
+  if (filter === "featured") filters.featured = true;
+  if (filter === "bestSeller") filters.bestSeller = true;
+  if (filter === "newArrival") filters.newArrival = true;
+  if (filter === "onDeal") filters.onDeal = true;
   const { data } = useQuery({
     queryKey: ["puck-products", filter, limit],
-    queryFn: () => listProducts(params),
+    queryFn: () => listProducts({ data: { ...filters, limit } }),
   });
   return (
     <section className="container-page py-8">
       {title && <SectionHeading title={title} />}
-      <ProductGrid products={data?.items ?? []} />
+      <ProductGrid products={data ?? []} />
     </section>
   );
 }
@@ -250,10 +250,26 @@ function CategoryGridBlock({ title, slugs }: CategoryGridProps) {
     <section className="container-page py-8">
       {title && <SectionHeading title={title} />}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {items.map((c) => <CategoryCard key={c.id} category={c} />)}
+        {items.map((c) => (
+          <Link
+            key={c.id}
+            to="/category/$slug"
+            params={{ slug: c.slug }}
+            className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card hover:shadow-md transition"
+          >
+            <div className="aspect-[4/3] bg-muted overflow-hidden">
+              {c.image_url && <img src={c.image_url} alt={c.name} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform" />}
+            </div>
+            <div className="p-3">
+              <div className="font-medium text-sm">{c.name}</div>
+              {c.description && <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{c.description}</div>}
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );
 }
+
 
 export type PuckData = Data;
