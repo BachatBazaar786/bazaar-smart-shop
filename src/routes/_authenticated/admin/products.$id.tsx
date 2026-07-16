@@ -121,27 +121,53 @@ function ProductEditor() {
           <AdminCard title="Basics">
             <div className="space-y-3">
               <Field label="Name">
-                <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value, slug: f.slug || slugify(e.target.value) })} className="input" />
+                <input
+                  value={f.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setF({
+                      ...f,
+                      name,
+                      slug: f.slug || slugify(name),
+                      sku: f.sku || (name.trim() ? generateSku(name) : ""),
+                    });
+                  }}
+                  className="input"
+                />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Slug"><input value={f.slug} onChange={(e) => setF({ ...f, slug: slugify(e.target.value) })} className="input" /></Field>
-                <Field label="SKU"><input value={f.sku} onChange={(e) => setF({ ...f, sku: e.target.value })} className="input" /></Field>
+                <Field label="SKU">
+                  <div className="flex gap-2">
+                    <input value={f.sku} onChange={(e) => setF({ ...f, sku: e.target.value })} placeholder="Auto-generated" className="input flex-1" />
+                    <button
+                      type="button"
+                      onClick={() => setF({ ...f, sku: generateSku(f.name || "product") })}
+                      title="Generate new SKU"
+                      className="inline-flex items-center justify-center px-2 rounded-md border border-border hover:bg-accent"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </button>
+                  </div>
+                </Field>
               </div>
               <Field label="Short description">
-                <textarea value={f.short_description} onChange={(e) => setF({ ...f, short_description: e.target.value })} rows={2} className="input" />
+                <RichEditor value={f.short_description} onChange={(v) => setF({ ...f, short_description: v })} minHeight={80} />
               </Field>
               <Field label="Full description">
-                <textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} rows={8} className="input" />
+                <RichEditor value={f.description} onChange={(v) => setF({ ...f, description: v })} minHeight={220} />
               </Field>
               <Field label="Usage / instructions">
-                <textarea value={f.usage} onChange={(e) => setF({ ...f, usage: e.target.value })} rows={3} className="input" />
+                <RichEditor value={f.usage} onChange={(v) => setF({ ...f, usage: v })} minHeight={120} />
               </Field>
-              <Field label="Benefits (one per line)">
-                <textarea
-                  value={f.benefits.join("\n")}
-                  onChange={(e) => setF({ ...f, benefits: e.target.value.split("\n").map((x) => x.trim()).filter(Boolean) })}
-                  rows={4} className="input"
+              <Field label="Benefits">
+                <RichEditor
+                  value={benefitsToHtml(f.benefits)}
+                  onChange={(html) => setF({ ...f, benefits: htmlToBenefits(html) })}
+                  minHeight={120}
+                  placeholder="Add each benefit as a bullet or new line"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Each bullet/line becomes a separate benefit chip.</p>
               </Field>
             </div>
           </AdminCard>
