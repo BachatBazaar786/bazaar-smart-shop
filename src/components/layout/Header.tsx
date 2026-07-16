@@ -13,6 +13,7 @@ import { MobileNav } from "./MobileNav";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { navCategories, categories } from "@/data/categories";
+import { useSiteNav } from "@/context/SiteContext";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,6 +29,7 @@ export function Header() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const cmsNav = useSiteNav();
   const checkAdmin = useServerFn(isCurrentUserAdmin);
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
@@ -156,23 +158,37 @@ export function Header() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {navCategories.map((n) => (
-              <Link
-                key={n.label}
-                to={n.to}
-                className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
-                activeProps={{ className: "text-primary" }}
-              >
-                {n.label}
-              </Link>
-            ))}
-            <Link
-              to="/blog"
-              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
-              activeProps={{ className: "text-primary" }}
-            >
-              Blog
-            </Link>
+            {cmsNav.length > 0
+              ? cmsNav.map((n) => (
+                  <a
+                    key={`${n.label}-${n.href}`}
+                    href={n.href}
+                    className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
+                  >
+                    {n.label}
+                  </a>
+                ))
+              : (
+                <>
+                  {navCategories.map((n) => (
+                    <Link
+                      key={n.label}
+                      to={n.to}
+                      className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
+                      activeProps={{ className: "text-primary" }}
+                    >
+                      {n.label}
+                    </Link>
+                  ))}
+                  <Link
+                    to="/blog"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-accent transition-colors"
+                    activeProps={{ className: "text-primary" }}
+                  >
+                    Blog
+                  </Link>
+                </>
+              )}
           </nav>
 
         </div>
