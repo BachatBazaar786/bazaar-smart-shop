@@ -18,6 +18,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { toast } from "sonner";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 function stripHtml(html: string): string {
   return (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -192,7 +193,7 @@ function ProductPage() {
             <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
           </div>
           <div className="mt-5"><Price price={displayPrice} salePrice={displaySale ?? undefined} size="lg" /></div>
-          <div className="mt-4 text-muted-foreground prose-content" dangerouslySetInnerHTML={{ __html: product.shortDescription || "" }} />
+          <div className="mt-4 text-muted-foreground prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.shortDescription || "") }} />
 
           {variants.data && variants.data.length > 0 && (
             <div className="mt-5">
@@ -279,7 +280,7 @@ function ProductPage() {
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
-            <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.description || "" }} />
+            <div className="prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description || "") }} />
           </TabsContent>
           <TabsContent value="specs">
             {product.specifications.length > 0 ? (
@@ -295,7 +296,7 @@ function ProductPage() {
           </TabsContent>
           {product.usage && (
             <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
-              <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.usage }} />
+              <div className="prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.usage) }} />
             </TabsContent>
           )}
           <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
