@@ -57,7 +57,7 @@ function DashboardPage() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.daily_revenue}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => d.slice(5)} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip formatter={(v: number) => formatPKR(Number(v))} />
