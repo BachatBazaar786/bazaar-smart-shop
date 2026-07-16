@@ -19,6 +19,11 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { toast } from "sonner";
 
+function stripHtml(html: string): string {
+  return (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+
 
 const productQO = (slug: string) => queryOptions({
   queryKey: ["product", slug],
