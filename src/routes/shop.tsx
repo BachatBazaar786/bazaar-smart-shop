@@ -145,7 +145,9 @@ function Shop() {
 
   return (
     <div className="container-page py-8">
+      <PuckPageRenderer pageKey="shop" />
       <Breadcrumbs items={[{ label: "Shop" }]} />
+
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-bold">Shop</h1>
