@@ -16,7 +16,8 @@ export const getDashboardStats = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     await requireAdmin(supabase, userId);
-    const { data, error } = await supabase.rpc("admin_dashboard_stats");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_stats");
     if (error) throw safeError("dashboard", error);
     return data as {
       revenue: { total_revenue: number; today_revenue: number; week_revenue: number; month_revenue: number; year_revenue: number };
