@@ -280,7 +280,7 @@ function ProductPage() {
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
-            <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.description || "" }} />
+            <div className="prose-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description || "") }} />
           </TabsContent>
           <TabsContent value="specs">
             {product.specifications.length > 0 ? (
