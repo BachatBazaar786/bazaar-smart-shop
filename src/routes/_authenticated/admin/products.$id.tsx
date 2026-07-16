@@ -7,8 +7,9 @@ import {
 } from "@/lib/admin.functions";
 import { AdminCard, AdminPageHeader } from "@/components/admin/AdminUI";
 import { MediaPicker } from "@/components/admin/MediaPicker";
-import { ArrowLeft, Plus, Trash2, GripVertical } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, GripVertical, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { RichEditor, htmlToBenefits, benefitsToHtml } from "@/components/admin/RichEditor";
 
 export const Route = createFileRoute("/_authenticated/admin/products/$id")({ component: ProductEditor });
 
