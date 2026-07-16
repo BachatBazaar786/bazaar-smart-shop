@@ -174,26 +174,9 @@ function ProductPage() {
 
       <div className="grid lg:grid-cols-2 gap-10 mt-6">
         <div>
-          <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border">
-            <img src={product.images[activeImage]} alt={product.name} className="h-full w-full object-cover" />
-          </div>
-          {product.images.length > 1 && (
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {product.images.map((img: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImage(i)}
-                  aria-label={`Show image ${i + 1} of ${product.images.length}`}
-                  aria-pressed={i === activeImage}
-                  className={`aspect-square rounded-md overflow-hidden border-2 ${i === activeImage ? "border-primary" : "border-transparent"}`}
-                >
-                  <img src={img} alt="" className="h-full w-full object-cover" />
-                </button>
-              ))}
-
-            </div>
-          )}
+          <ProductImageViewer images={product.images} name={product.name} activeIndex={activeImage} onChange={setActiveImage} />
         </div>
+
 
         <div>
           {category && <Link to="/category/$slug" params={{ slug: category.slug }} className="text-xs uppercase tracking-wide text-primary font-semibold">{category.name}</Link>}
