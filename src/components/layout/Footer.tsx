@@ -56,9 +56,9 @@ export function Footer() {
   const description =
     (footer.description as string | undefined)?.trim() ||
     "Pakistan's smart shopping marketplace — bringing carefully selected quality products to your doorstep, from Gilgit-Baltistan's finest to everyday essentials.";
-  const email = (footer.email as string | undefined)?.trim() || settings.notification_email?.trim() || "hello@bachatatbazaar.pk";
-  const phone = (footer.phone as string | undefined)?.trim() || settings.whatsapp_number?.trim() || "+92 300 0000000";
-  const address = (footer.address as string | undefined)?.trim() || "Karachi, Pakistan";
+  const email = (footer.email as string | undefined)?.trim() || settings.notification_email?.trim() || "support@bachatatbazaar.pk";
+  const phone = (footer.phone as string | undefined)?.trim() || settings.whatsapp_number?.trim() || "+92 312 1007009";
+  const address = (footer.address as string | undefined)?.trim() || "Rawalpindi, Pakistan";
 
   const socials: { icon: typeof Facebook; url?: string }[] = [
     { icon: Facebook, url: settings.social_facebook },
