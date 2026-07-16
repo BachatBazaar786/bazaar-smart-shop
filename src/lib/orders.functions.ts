@@ -158,8 +158,9 @@ export const createOrder = createServerFn({ method: "POST" })
     }
 
     // Atomically decrement stock per line. Roll back the order if any line fails.
+    const { supabaseAdmin: adminForStock } = await import("@/integrations/supabase/client.server");
     for (const li of lineItems) {
-      const { data: ok, error: decErr } = await supabase.rpc(
+      const { data: ok, error: decErr } = await adminForStock.rpc(
         "decrement_product_stock",
         { _product_id: li.product_id, _qty: li.quantity },
       );
