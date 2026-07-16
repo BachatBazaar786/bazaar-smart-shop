@@ -640,6 +640,27 @@ export type Database = {
         }
         Relationships: []
       }
+      page_layouts: {
+        Row: {
+          data: Json
+          page_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          data?: Json
+          page_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          data?: Json
+          page_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           alt: string | null
