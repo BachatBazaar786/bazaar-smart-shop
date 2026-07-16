@@ -5,6 +5,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import type { OrderSummary } from "@/types/catalog";
 import { safeError, escapePostgrestLiteral } from "./server-errors";
+import { sendTemplateEmail } from "./email-templates/send-email";
+
+const ADMIN_EMAIL = "bachatatbazaar.pk@gmail.com";
+const SITE_URL = "https://bachatatbazaar.pk";
+const SITE_NAME = "BachatAtBazaar.pk";
 
 function getPublicClient() {
   return createClient<Database>(
@@ -179,6 +184,71 @@ export const createOrder = createServerFn({ method: "POST" })
         user_id: userId,
         discount,
       } as never);
+    }
+
+    // Fetch logo for branded email (best-effort; never blocks order success).
+    let logoUrl: string | undefined
+    try {
+      const { data: settings } = await supabase
+        .from("site_settings")
+        .select("data")
+        .eq("id", true as never)
+        .maybeSingle();
+      const d = (settings?.data ?? {}) as Record<string, any>;
+      if (typeof d.logo_url === "string") logoUrl = d.logo_url;
+    } catch {}
+
+    const emailPayload = {
+      logoUrl,
+      siteName: SITE_NAME,
+      siteUrl: SITE_URL,
+      orderNumber: order.order_number,
+      customerName: data.shipping_address.full_name,
+      email: data.shipping_address.email,
+      paymentMethod: data.payment_method,
+      paymentStatus:
+        data.payment_method === "bank_transfer" ? "awaiting_verification" : "unpaid",
+      status: "pending",
+      subtotal,
+      shipping,
+      discount,
+      total,
+      currency: "Rs",
+      items: lineItems.map((li) => ({
+        name: li.name_snapshot,
+        sku: li.sku_snapshot,
+        quantity: li.quantity,
+        unit_price: li.unit_price,
+        subtotal: li.subtotal,
+      })),
+      shippingAddress: data.shipping_address,
+    };
+
+    // Send customer + admin notifications (best-effort — never fail the order).
+    try {
+      await sendTemplateEmail("order-confirmation", data.shipping_address.email, {
+        templateData: {
+          ...emailPayload,
+          isAdminCopy: false,
+          orderUrl: `${SITE_URL}/order-confirmation?order=${encodeURIComponent(order.order_number)}`,
+        },
+        idempotencyKey: `order-customer-${order.id}`,
+      });
+    } catch (e) {
+      console.error("[orders] customer email failed", e);
+    }
+    try {
+      await sendTemplateEmail("order-confirmation", ADMIN_EMAIL, {
+        templateData: {
+          ...emailPayload,
+          isAdminCopy: true,
+          orderUrl: `${SITE_URL}/admin/orders/${order.id}`,
+        },
+        idempotencyKey: `order-admin-${order.id}`,
+        replyTo: data.shipping_address.email,
+      });
+    } catch (e) {
+      console.error("[orders] admin email failed", e);
     }
 
     return { id: order.id, order_number: order.order_number };
