@@ -102,10 +102,10 @@
   },
   "overrides": {
     "uuid": "^11.1.0",
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^5.2.1"
   },
   "resolutions": {
     "uuid": "^11.1.0",
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^5.2.1"
   }
 }
