@@ -38,6 +38,12 @@ function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+function generateSku(name: string) {
+  const base = slugify(name).toUpperCase().replace(/-/g, "").slice(0, 10) || "PROD";
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `BAB-${base}-${rand}`;
+}
+
 function ProductEditor() {
   const { id } = Route.useParams();
   const isNew = id === "new";
