@@ -83,7 +83,12 @@ export const OrderConfirmationEmail = ({
   orderUrl,
 }: OrderConfirmationProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+    </Head>
     <Preview>
       {isAdminCopy
         ? `New order ${orderNumber} — ${fmt(total, currency)}`
@@ -91,6 +96,7 @@ export const OrderConfirmationEmail = ({
     </Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={brandBar} />
         <Section style={{ textAlign: 'center', padding: '10px 0 20px' }}>
           {logoUrl ? (
             <Img
@@ -110,7 +116,7 @@ export const OrderConfirmationEmail = ({
               : `We've received your order and will start processing it right away.`}
           </Text>
           <Text style={orderBadge}>
-            Order # <strong style={{ color: '#0a7a3b' }}>{orderNumber}</strong>
+            Order # <strong style={{ color: '#F15D22' }}>{orderNumber}</strong>
           </Text>
         </Section>
 
@@ -247,22 +253,29 @@ export const template = {
   },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '24px 20px', maxWidth: '600px' }
-const h1 = { fontSize: '26px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '16px 0 8px' }
-const h2 = { fontSize: '16px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '0 0 12px' }
-const sub = { fontSize: '14px', color: '#55575d', margin: '0 0 12px', textAlign: 'center' as const }
-const orderBadge = { display: 'inline-block', fontSize: '14px', backgroundColor: '#f3f4f6', padding: '6px 14px', borderRadius: '999px', margin: '4px 0 0', textAlign: 'center' as const }
-const card = { border: '1px solid #e5e7eb', borderRadius: '10px', padding: '18px 20px', margin: '0 0 16px' }
+const FONT = "'Montserrat', 'Segoe UI', Arial, sans-serif"
+const BLUE = '#0B3795'
+const BLUE_DARK = '#082867'
+const ORANGE = '#F15D22'
+
+const main = { backgroundColor: '#ffffff', fontFamily: FONT, color: '#0a0a0a' }
+const container = { padding: '0 0 24px', maxWidth: '600px' }
+const brandBar = { height: '6px', backgroundColor: BLUE, borderTop: `3px solid ${ORANGE}`, margin: '0 0 24px' }
+const h1 = { fontSize: '26px', fontWeight: 800 as const, color: BLUE, margin: '16px 0 8px', fontFamily: FONT, letterSpacing: '-0.01em' }
+const h2 = { fontSize: '16px', fontWeight: 700 as const, color: BLUE, margin: '0 0 12px', fontFamily: FONT, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }
+const sub = { fontSize: '14px', color: '#55575d', margin: '0 0 12px', textAlign: 'center' as const, fontFamily: FONT, fontWeight: 500 as const }
+const orderBadge = { display: 'inline-block', fontSize: '14px', backgroundColor: '#FFF1EA', color: ORANGE, padding: '8px 16px', borderRadius: '999px', margin: '4px 0 0', textAlign: 'center' as const, fontFamily: FONT, fontWeight: 700 as const }
+const card = { border: `1px solid #e5e7eb`, borderRadius: '10px', padding: '18px 20px', margin: '0 20px 16px', backgroundColor: '#ffffff' }
 const itemRow = { margin: '0' }
-const itemName = { fontSize: '14px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '0 0 2px' }
-const itemMeta = { fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }
-const itemPrice = { fontSize: '14px', color: '#0a0a0a', margin: '0' }
+const itemName = { fontSize: '14px', fontWeight: 700 as const, color: '#0a0a0a', margin: '0 0 2px', fontFamily: FONT }
+const itemMeta = { fontSize: '12px', color: '#6b7280', margin: '0 0 2px', fontFamily: FONT, fontWeight: 500 as const }
+const itemPrice = { fontSize: '14px', color: '#0a0a0a', margin: '0', fontFamily: FONT, fontWeight: 600 as const }
 const hr = { borderColor: '#e5e7eb', margin: '10px 0' }
 const totals = { margin: '4px 0 0' }
-const totalRow = { fontSize: '14px', color: '#374151', margin: '4px 0', display: 'flex', justifyContent: 'space-between' as const }
-const grandTotal = { fontSize: '16px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '6px 0', display: 'flex', justifyContent: 'space-between' as const }
-const addr = { fontSize: '14px', color: '#374151', margin: '0 0 8px', lineHeight: '1.6' }
-const link = { color: '#0a7a3b', textDecoration: 'underline' }
-const cta = { backgroundColor: '#0a7a3b', color: '#ffffff', fontSize: '14px', borderRadius: '8px', padding: '12px 22px', textDecoration: 'none', fontWeight: 'bold' as const }
-const footer = { fontSize: '12px', color: '#9ca3af', textAlign: 'center' as const, margin: '20px 0 0', lineHeight: '1.6' }
+const totalRow = { fontSize: '14px', color: '#374151', margin: '4px 0', display: 'flex', justifyContent: 'space-between' as const, fontFamily: FONT, fontWeight: 500 as const }
+const grandTotal = { fontSize: '18px', fontWeight: 800 as const, color: BLUE, margin: '6px 0', display: 'flex', justifyContent: 'space-between' as const, fontFamily: FONT }
+const addr = { fontSize: '14px', color: '#374151', margin: '0 0 8px', lineHeight: '1.6', fontFamily: FONT, fontWeight: 500 as const }
+const link = { color: BLUE, textDecoration: 'underline', fontFamily: FONT, fontWeight: 600 as const }
+const cta = { backgroundColor: ORANGE, color: '#ffffff', fontSize: '14px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: 700 as const, fontFamily: FONT, textTransform: 'uppercase' as const, letterSpacing: '0.05em', display: 'inline-block' }
+const footer = { fontSize: '12px', color: '#9ca3af', textAlign: 'center' as const, margin: '20px 20px 0', lineHeight: '1.6', fontFamily: FONT, fontWeight: 500 as const }
+
