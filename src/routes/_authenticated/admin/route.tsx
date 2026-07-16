@@ -59,6 +59,7 @@ const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/blog", label: "Blog", icon: FileText },
   { to: "/admin/cms", label: "Content", icon: FileText },
   { to: "/admin/page-builder", label: "Page builder", icon: FileText },
+  { to: "/admin/visual-editor", label: "Visual editor", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
