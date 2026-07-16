@@ -443,7 +443,8 @@ export const getAnalyticsExtras = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ days: z.number().int().min(1).max(365).default(30) }).parse(i ?? {}))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: json, error } = await context.supabase.rpc("admin_analytics_extras", { _days: data.days });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: json, error } = await supabaseAdmin.rpc("admin_analytics_extras", { _days: data.days });
     if (error) throw safeError("analytics_extras", error);
     return json as {
       most_viewed: { id: string; name: string; slug: string; views: number }[];
