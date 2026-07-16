@@ -4,7 +4,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Logo } from "./Logo";
 import { categories, navCategories } from "@/data/categories";
 
-export function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function MobileNav({ open, onClose, isAdmin = false }: { open: boolean; onClose: () => void; isAdmin?: boolean }) {
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="left" className="w-[85%] sm:w-96 p-0 flex flex-col">
@@ -36,6 +36,9 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
           ))}
           <div className="my-3 h-px bg-border" />
           <Link to="/account" onClick={onClose} className="block rounded-md px-3 py-2.5 text-sm hover:bg-accent">My Account</Link>
+          {isAdmin && (
+            <Link to="/admin" onClick={onClose} className="block rounded-md px-3 py-2.5 text-sm font-semibold text-primary hover:bg-accent">Admin Dashboard</Link>
+          )}
           <Link to="/account/orders" onClick={onClose} className="block rounded-md px-3 py-2.5 text-sm hover:bg-accent">My Orders</Link>
           <Link to="/wishlist" onClick={onClose} className="block rounded-md px-3 py-2.5 text-sm hover:bg-accent">Wishlist</Link>
           <Link to="/track-order" onClick={onClose} className="block rounded-md px-3 py-2.5 text-sm hover:bg-accent">Track Order</Link>

@@ -433,8 +433,14 @@ export const setCustomerRoleAdmin = createServerFn({ method: "POST" })
     // Only super_admin can promote to admin
     const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
     if (!isSuper) throw new Error("Only super admin can change roles");
-    await context.supabase.from("user_roles").delete().eq("user_id", data.user_id).in("role", ["admin", "customer"]);
-    const { error } = await context.supabase.from("user_roles").insert({ user_id: data.user_id, role: data.role });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: deleteError } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.user_id)
+      .in("role", ["admin", "customer"]);
+    if (deleteError) throw safeError("role_update", deleteError);
+    const { error } = await supabaseAdmin.from("user_roles").insert({ user_id: data.user_id, role: data.role });
     if (error) throw safeError("role_update", error);
     return { ok: true };
   });
