@@ -330,8 +330,8 @@ export const trackOrderPublic = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const supabase = getPublicClient();
-    const { data: rows, error } = await supabase.rpc("track_order_public", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("track_order_public", {
       _order_number: data.order_number,
       _email: data.email,
     });
