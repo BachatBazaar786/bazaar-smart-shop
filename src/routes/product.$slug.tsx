@@ -51,10 +51,10 @@ export const Route = createFileRoute("/product/$slug")({
     return {
       meta: [
         { title: `${p.name} — BachatAtBazaar.pk` },
-        { name: "description", content: p.shortDescription },
+        { name: "description", content: stripHtml(p.shortDescription).slice(0, 160) },
         { property: "og:type", content: "product" },
         { property: "og:title", content: `${p.name} — BachatAtBazaar.pk` },
-        { property: "og:description", content: p.shortDescription },
+        { property: "og:description", content: stripHtml(p.shortDescription).slice(0, 160) },
         { property: "og:url", content: url },
         { property: "og:image", content: p.images[0] },
         { name: "twitter:image", content: p.images[0] },
@@ -67,9 +67,9 @@ export const Route = createFileRoute("/product/$slug")({
             "@context": "https://schema.org",
             "@type": "Product",
             name: p.name,
-            description: p.shortDescription,
+            description: stripHtml(p.shortDescription),
             image: p.images,
-            sku: p.id,
+            sku: p.sku || p.id,
             ...(p.category ? { category: p.category.name } : {}),
             aggregateRating: p.reviewCount > 0 ? {
               "@type": "AggregateRating",
