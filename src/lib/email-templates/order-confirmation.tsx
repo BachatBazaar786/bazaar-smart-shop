@@ -83,7 +83,12 @@ export const OrderConfirmationEmail = ({
   orderUrl,
 }: OrderConfirmationProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+    </Head>
     <Preview>
       {isAdminCopy
         ? `New order ${orderNumber} — ${fmt(total, currency)}`
@@ -91,6 +96,7 @@ export const OrderConfirmationEmail = ({
     </Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={brandBar} />
         <Section style={{ textAlign: 'center', padding: '10px 0 20px' }}>
           {logoUrl ? (
             <Img
