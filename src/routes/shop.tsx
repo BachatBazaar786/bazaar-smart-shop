@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PuckPageRenderer } from "@/components/site/PuckPageRenderer";
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -144,7 +145,9 @@ function Shop() {
 
   return (
     <div className="container-page py-8">
+      <PuckPageRenderer pageKey="shop" />
       <Breadcrumbs items={[{ label: "Shop" }]} />
+
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-bold">Shop</h1>

@@ -31,6 +31,7 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminVisualEditorRouteImport } from './routes/_authenticated/admin/visual-editor'
 import { Route as AuthenticatedAdminVariantsRouteImport } from './routes/_authenticated/admin/variants'
 import { Route as AuthenticatedAdminTagsRouteImport } from './routes/_authenticated/admin/tags'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
@@ -163,6 +164,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminVisualEditorRoute =
+  AuthenticatedAdminVisualEditorRouteImport.update({
+    id: '/visual-editor',
+    path: '/visual-editor',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminVariantsRoute =
   AuthenticatedAdminVariantsRouteImport.update({
     id: '/variants',
@@ -323,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/tags': typeof AuthenticatedAdminTagsRoute
   '/admin/variants': typeof AuthenticatedAdminVariantsRoute
+  '/admin/visual-editor': typeof AuthenticatedAdminVisualEditorRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/blog/$id': typeof AuthenticatedAdminBlogIdRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -367,6 +375,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/tags': typeof AuthenticatedAdminTagsRoute
   '/admin/variants': typeof AuthenticatedAdminVariantsRoute
+  '/admin/visual-editor': typeof AuthenticatedAdminVisualEditorRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/blog/$id': typeof AuthenticatedAdminBlogIdRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -414,6 +423,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/tags': typeof AuthenticatedAdminTagsRoute
   '/_authenticated/admin/variants': typeof AuthenticatedAdminVariantsRoute
+  '/_authenticated/admin/visual-editor': typeof AuthenticatedAdminVisualEditorRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/blog/$id': typeof AuthenticatedAdminBlogIdRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin/variants'
+    | '/admin/visual-editor'
     | '/admin/'
     | '/admin/blog/$id'
     | '/admin/customers/$id'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin/variants'
+    | '/admin/visual-editor'
     | '/admin'
     | '/admin/blog/$id'
     | '/admin/customers/$id'
@@ -551,6 +563,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/tags'
     | '/_authenticated/admin/variants'
+    | '/_authenticated/admin/visual-editor'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/blog/$id'
     | '/_authenticated/admin/customers/$id'
@@ -745,6 +758,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/visual-editor': {
+      id: '/_authenticated/admin/visual-editor'
+      path: '/visual-editor'
+      fullPath: '/admin/visual-editor'
+      preLoaderRoute: typeof AuthenticatedAdminVisualEditorRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/variants': {
       id: '/_authenticated/admin/variants'
       path: '/variants'
@@ -914,6 +934,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminTagsRoute: typeof AuthenticatedAdminTagsRoute
   AuthenticatedAdminVariantsRoute: typeof AuthenticatedAdminVariantsRoute
+  AuthenticatedAdminVisualEditorRoute: typeof AuthenticatedAdminVisualEditorRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminBlogIdRoute: typeof AuthenticatedAdminBlogIdRoute
   AuthenticatedAdminCustomersIdRoute: typeof AuthenticatedAdminCustomersIdRoute
@@ -938,6 +959,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
     AuthenticatedAdminTagsRoute: AuthenticatedAdminTagsRoute,
     AuthenticatedAdminVariantsRoute: AuthenticatedAdminVariantsRoute,
+    AuthenticatedAdminVisualEditorRoute: AuthenticatedAdminVisualEditorRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminBlogIdRoute: AuthenticatedAdminBlogIdRoute,
     AuthenticatedAdminCustomersIdRoute: AuthenticatedAdminCustomersIdRoute,

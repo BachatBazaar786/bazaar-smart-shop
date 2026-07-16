@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Mountain, Sparkles, Leaf, ShieldCheck, Package, Heart } from "lucide-react";
+import { PuckPageRenderer } from "@/components/site/PuckPageRenderer";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -19,7 +20,9 @@ export const Route = createFileRoute("/about")({
 function About() {
   return (
     <div>
+      <PuckPageRenderer pageKey="about" />
       <section className="bg-surface border-b border-border">
+
         <div className="container-page py-16 md:py-24 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"><Mountain className="h-3.5 w-3.5" /> Our Story</div>

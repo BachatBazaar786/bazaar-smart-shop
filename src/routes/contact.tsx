@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { PuckPageRenderer } from "@/components/site/PuckPageRenderer";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -26,6 +27,8 @@ function ContactPage() {
   const [sent, setSent] = useState(false);
   return (
     <div className="container-page py-12">
+      <PuckPageRenderer pageKey="contact" />
+
       <div className="max-w-2xl">
         <h1 className="font-display text-4xl md:text-5xl font-bold">Get in touch</h1>
         <p className="mt-3 text-muted-foreground text-lg">Have a question about an order, a product, or a partnership idea? We'd love to hear from you.</p>
