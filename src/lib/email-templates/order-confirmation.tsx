@@ -116,7 +116,7 @@ export const OrderConfirmationEmail = ({
               : `We've received your order and will start processing it right away.`}
           </Text>
           <Text style={orderBadge}>
-            Order # <strong style={{ color: '#0a7a3b' }}>{orderNumber}</strong>
+            Order # <strong style={{ color: '#F15D22' }}>{orderNumber}</strong>
           </Text>
         </Section>
 
