@@ -244,8 +244,9 @@ export const validateCoupon = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>
     z.object({ code: z.string().min(2).max(40), subtotal: z.number().nonnegative() }).parse(i),
   )
-  .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase.rpc("validate_coupon", {
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("validate_coupon", {
       _code: data.code,
       _subtotal: data.subtotal,
     });
