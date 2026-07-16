@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listProducts, listCategories } from "@/lib/catalog.functions";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { CategoryCard } from "@/components/common/CategoryCard";
 import { SectionHeading } from "@/components/common/SectionHeading";
+
 
 /** Puck blocks — mirror the site design system so drag-and-drop pages match the rest of the site. */
 
