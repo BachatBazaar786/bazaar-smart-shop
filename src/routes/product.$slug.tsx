@@ -9,6 +9,7 @@ import { Price } from "@/components/product/Price";
 import { Rating } from "@/components/product/Rating";
 import { QuantitySelector } from "@/components/product/QuantitySelector";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import { ProductImageViewer } from "@/components/product/ProductImageViewer";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
