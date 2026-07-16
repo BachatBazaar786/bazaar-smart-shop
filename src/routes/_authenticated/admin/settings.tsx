@@ -88,7 +88,7 @@ function SettingsPage() {
           <Field label="EasyPaisa number"><input value={v.easypaisa ?? ""} onChange={(e) => setV({ ...v, easypaisa: e.target.value })} className="input" /></Field>
         </AdminCard>
       </div>
-      <style>{`.input { width: 100%; border-radius: 0.375rem; border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; font-size: 0.875rem; background: hsl(var(--background)); margin-top: 0.25rem; }`}</style>
+      <style>{`.input { width: 100%; border-radius: 0.375rem; border: 1px solid var(--border); padding: 0.5rem 0.75rem; font-size: 0.875rem; background: var(--background); margin-top: 0.25rem; }`}</style>
     </div>
   );
 }
