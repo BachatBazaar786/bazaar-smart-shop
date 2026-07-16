@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { FaviconManager } from "@/components/layout/FaviconManager";
+import { SiteProvider } from "@/context/SiteContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
@@ -134,20 +137,24 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
-      <CartProvider>
-        <WishlistProvider>
-          <RecentlyViewedProvider>
-            <div className="min-h-screen flex flex-col bg-background">
-              <Header />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-              <Footer />
-            </div>
-            <Toaster position="top-right" />
-          </RecentlyViewedProvider>
-        </WishlistProvider>
-      </CartProvider>
+      <SiteProvider>
+        <FaviconManager />
+        <CartProvider>
+          <WishlistProvider>
+            <RecentlyViewedProvider>
+              <div className="min-h-screen flex flex-col bg-background">
+                <Header />
+                <main className="flex-1">
+                  <Outlet />
+                </main>
+                <Footer />
+              </div>
+              <WhatsAppButton />
+              <Toaster position="top-right" />
+            </RecentlyViewedProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </SiteProvider>
     </QueryClientProvider>
   );
 }
