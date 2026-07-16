@@ -99,5 +99,11 @@
     "overrides": {
       "entities": "4.5.0"
     }
+  },
+  "overrides": {
+    "uuid": "^11.1.0"
+  },
+  "resolutions": {
+    "uuid": "^11.1.0"
   }
 }
