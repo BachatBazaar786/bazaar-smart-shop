@@ -19,6 +19,11 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { toast } from "sonner";
 
+function stripHtml(html: string): string {
+  return (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+
 
 const productQO = (slug: string) => queryOptions({
   queryKey: ["product", slug],
@@ -46,10 +51,10 @@ export const Route = createFileRoute("/product/$slug")({
     return {
       meta: [
         { title: `${p.name} — BachatAtBazaar.pk` },
-        { name: "description", content: p.shortDescription },
+        { name: "description", content: stripHtml(p.shortDescription).slice(0, 160) },
         { property: "og:type", content: "product" },
         { property: "og:title", content: `${p.name} — BachatAtBazaar.pk` },
-        { property: "og:description", content: p.shortDescription },
+        { property: "og:description", content: stripHtml(p.shortDescription).slice(0, 160) },
         { property: "og:url", content: url },
         { property: "og:image", content: p.images[0] },
         { name: "twitter:image", content: p.images[0] },
@@ -62,9 +67,9 @@ export const Route = createFileRoute("/product/$slug")({
             "@context": "https://schema.org",
             "@type": "Product",
             name: p.name,
-            description: p.shortDescription,
+            description: stripHtml(p.shortDescription),
             image: p.images,
-            sku: p.id,
+            sku: p.sku || p.id,
             ...(p.category ? { category: p.category.name } : {}),
             aggregateRating: p.reviewCount > 0 ? {
               "@type": "AggregateRating",
@@ -187,7 +192,7 @@ function ProductPage() {
             <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
           </div>
           <div className="mt-5"><Price price={displayPrice} salePrice={displaySale ?? undefined} size="lg" /></div>
-          <p className="mt-4 text-muted-foreground">{product.shortDescription}</p>
+          <div className="mt-4 text-muted-foreground prose-content" dangerouslySetInnerHTML={{ __html: product.shortDescription || "" }} />
 
           {variants.data && variants.data.length > 0 && (
             <div className="mt-5">
@@ -274,7 +279,7 @@ function ProductPage() {
             <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="max-w-3xl text-muted-foreground leading-relaxed">
-            <p className="whitespace-pre-line">{product.description}</p>
+            <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.description || "" }} />
           </TabsContent>
           <TabsContent value="specs">
             {product.specifications.length > 0 ? (
@@ -289,7 +294,9 @@ function ProductPage() {
             ) : <p className="text-sm text-muted-foreground">No specifications listed.</p>}
           </TabsContent>
           {product.usage && (
-            <TabsContent value="usage" className="max-w-3xl text-muted-foreground"><p>{product.usage}</p></TabsContent>
+            <TabsContent value="usage" className="max-w-3xl text-muted-foreground">
+              <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.usage }} />
+            </TabsContent>
           )}
           <TabsContent value="shipping" className="text-sm text-muted-foreground space-y-3 max-w-3xl">
             <p><strong className="text-foreground">Delivery:</strong> We deliver across Pakistan within 2–5 working days depending on your city.</p>
