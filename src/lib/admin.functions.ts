@@ -452,7 +452,8 @@ export const adjustStockAdmin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: stock, error } = await context.supabase.rpc("admin_adjust_stock", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: stock, error } = await supabaseAdmin.rpc("admin_adjust_stock", {
       _product_id: data.product_id,
       _delta: data.delta,
       _reason: data.reason,
