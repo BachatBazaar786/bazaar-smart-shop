@@ -138,17 +138,17 @@ function Home() {
           <div className="relative">
             {heroImage ? (
               <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted">
-                <img src={heroImage} alt="Hero" className="h-full w-full object-cover" />
+                <img src={heroImage} alt="Himalayan buckwheat fields under snow-capped peaks in Gilgit-Baltistan" className="h-full w-full object-cover" />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-3">
-                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g1} alt="Hero 1" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g2} alt="Hero 2" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g1} alt="Freshly harvested Himalayan Tartary buckwheat grains" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g2} alt="Stone-milled buckwheat flour being packed for delivery" className="h-full w-full object-cover" /></div>
                 </div>
                 <div className="space-y-3 pt-8">
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g3} alt="Hero 3" className="h-full w-full object-cover" /></div>
-                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g4} alt="Hero 4" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src={g3} alt="Traditional Pakistani buckwheat pancakes served with honey" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src={g4} alt="Farmer inspecting organic buckwheat crop in Hunza valley" className="h-full w-full object-cover" /></div>
                 </div>
               </div>
             )}
@@ -185,7 +185,7 @@ function Home() {
               </Link>
             </div>
             <div className="hidden lg:block relative">
-              <img src={promoImage} alt="Launch collection" className="rounded-lg w-full h-full object-cover" />
+              <img src={promoImage} alt="BachatAtBazaar launch collection featuring Himalayan superfoods and wellness essentials" className="rounded-lg w-full h-full object-cover" />
             </div>
           </div>
         </div>

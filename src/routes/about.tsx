@@ -33,12 +33,12 @@ function About() {
             <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">A smart marketplace, built for Pakistan.</h1>
             <p className="mt-5 text-lg text-muted-foreground max-w-xl">BachatAtBazaar.pk began with a simple idea — that everyday shopping should feel smart, honest and genuinely valuable. We start in the valleys of Gilgit-Baltistan and grow from there.</p>
           </div>
-          <div className="aspect-[4/3] rounded-xl overflow-hidden"><img src={heroImg} alt="Gilgit-Baltistan" className="h-full w-full object-cover" /></div>
+          <div className="aspect-[4/3] rounded-xl overflow-hidden"><img src={heroImg} alt="Terraced buckwheat farms across the Gilgit-Baltistan mountains" className="h-full w-full object-cover" /></div>
         </div>
       </section>
 
       <section className="container-page py-16 grid lg:grid-cols-2 gap-10 items-center">
-        <div className="aspect-[4/3] rounded-xl overflow-hidden order-2 lg:order-1"><img src={missionImg} alt="Mission" className="h-full w-full object-cover" /></div>
+        <div className="aspect-[4/3] rounded-xl overflow-hidden order-2 lg:order-1"><img src={missionImg} alt="Stone-milled buckwheat flour being packed by BachatAtBazaar team" className="h-full w-full object-cover" /></div>
         <div className="order-1 lg:order-2">
           <div className="text-xs uppercase tracking-[0.15em] text-primary font-semibold">Our Mission</div>
           <h2 className="mt-2 font-display text-3xl md:text-4xl font-bold">Quality products at smart prices — with genuine care.</h2>
