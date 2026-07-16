@@ -3,6 +3,10 @@ import { Facebook, Instagram, Youtube, ShieldCheck, Truck, Sparkles, Headphones,
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
+import { useSiteSettings, useSiteSection } from "@/context/SiteContext";
+import { subscribeNewsletter } from "@/lib/contact.functions";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const cols = [
   {
@@ -43,9 +47,27 @@ const cols = [
 ] as const;
 
 export function Footer() {
+  const settings = useSiteSettings();
+  const footer = useSiteSection("footer");
+  const [busy, setBusy] = useState(false);
+
+  const brand = (settings.site_name?.trim() || "BachatAtBazaar.pk").replace(/\.[^.]+$/, "");
+  const tagline = settings.tagline?.trim() || "Shop Smart. Save More. Live Better.";
+  const description =
+    (footer.description as string | undefined)?.trim() ||
+    "Pakistan's smart shopping marketplace — bringing carefully selected quality products to your doorstep, from Gilgit-Baltistan's finest to everyday essentials.";
+  const email = (footer.email as string | undefined)?.trim() || settings.notification_email?.trim() || "hello@bachatatbazaar.pk";
+  const phone = (footer.phone as string | undefined)?.trim() || settings.whatsapp_number?.trim() || "+92 300 0000000";
+  const address = (footer.address as string | undefined)?.trim() || "Karachi, Pakistan";
+
+  const socials: { icon: typeof Facebook; url?: string }[] = [
+    { icon: Facebook, url: settings.social_facebook },
+    { icon: Instagram, url: settings.social_instagram },
+    { icon: Youtube, url: settings.social_youtube },
+  ];
+
   return (
     <footer className="mt-16 border-t border-border bg-surface">
-      {/* Trust strip */}
       <div className="border-b border-border">
         <div className="container-page grid grid-cols-2 md:grid-cols-4 gap-6 py-8">
           {[
@@ -70,27 +92,26 @@ export function Footer() {
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div>
           <Logo />
-          <p className="mt-4 text-sm text-muted-foreground max-w-sm">
-            Pakistan's smart shopping marketplace — bringing carefully selected quality products
-            to your doorstep, from Gilgit-Baltistan's finest to everyday essentials.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground max-w-sm">{description}</p>
           <div className="mt-5">
             <div className="text-sm font-semibold mb-2">Get in touch</div>
             <address className="not-italic text-sm text-muted-foreground space-y-1">
-              <div>Email: hello@bachatatbazaar.pk</div>
-              <div>Phone: +92 300 0000000</div>
-              <div>Karachi, Pakistan</div>
+              <div>Email: {email}</div>
+              <div>Phone: {phone}</div>
+              <div className="whitespace-pre-line">{address}</div>
             </address>
           </div>
           <div className="mt-5 flex gap-2">
-            {[Facebook, Instagram, Youtube].map((I, i) => (
+            {socials.map((s, i) => (
               <a
                 key={i}
-                href="#"
+                href={s.url || "#"}
+                target={s.url ? "_blank" : undefined}
+                rel={s.url ? "noopener noreferrer" : undefined}
                 aria-label="Social"
                 className="h-9 w-9 grid place-items-center rounded-md border border-border hover:bg-accent"
               >
-                <I className="h-4 w-4" />
+                <s.icon className="h-4 w-4" />
               </a>
             ))}
           </div>
@@ -117,12 +138,28 @@ export function Footer() {
             <h3 className="font-display text-lg font-semibold">Smart Deals, Straight to Your Inbox</h3>
             <p className="text-sm text-muted-foreground">Subscribe for offers, launches and savings tips.</p>
           </div>
-          <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              setBusy(true);
+              try {
+                await subscribeNewsletter({ data: { email: String(fd.get("email")) } });
+                (e.target as HTMLFormElement).reset();
+                toast.success("Subscribed! Thanks for joining.");
+              } catch (err) {
+                toast.error((err as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+            className="flex gap-2"
+          >
             <div className="relative flex-1">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="email" required placeholder="Your email address" className="pl-10 h-11" />
+              <Input name="email" type="email" required placeholder="Your email address" className="pl-10 h-11" />
             </div>
-            <Button type="submit" className="h-11 px-6 bg-primary hover:bg-primary-dark text-primary-foreground">
+            <Button type="submit" disabled={busy} className="h-11 px-6 bg-primary hover:bg-primary-dark text-primary-foreground">
               Subscribe
             </Button>
           </form>
@@ -131,8 +168,8 @@ export function Footer() {
 
       <div className="border-t border-border">
         <div className="container-page py-5 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} BachatAtBazaar.pk — All rights reserved.</div>
-          <div>Shop Smart. Save More. Live Better.</div>
+          <div>© {new Date().getFullYear()} {brand} — All rights reserved.</div>
+          <div>{tagline}</div>
         </div>
       </div>
     </footer>

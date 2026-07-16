@@ -7,6 +7,7 @@ import { CategoryCard } from "@/components/common/CategoryCard";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading, ViewAll } from "@/components/common/SectionHeading";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
+import { useSiteSection } from "@/context/SiteContext";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -63,6 +64,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const recent = useRecentlyViewed();
+  const hero = useSiteSection("hero");
   const { data: categories } = useSuspenseQuery(categoriesQO);
   const { data: featured } = useSuspenseQuery(featuredQO);
   const { data: bestSellers } = useSuspenseQuery(bestSellersQO);
@@ -70,26 +72,40 @@ function Home() {
   const { data: deals } = useSuspenseQuery(dealsQO);
   const firstCat = categories[0]?.slug ?? "himalayan-buckwheat";
 
+  const heroEyebrow = (hero.eyebrow as string | undefined)?.trim() || "Pakistan's Smart Shopping Marketplace";
+  const heroTitle = (hero.title as string | undefined)?.trim();
+  const heroSubtitle = (hero.subtitle as string | undefined)?.trim() ||
+    "BachatAtBazaar.pk brings you carefully selected quality products from across Pakistan and beyond — starting with premium Himalayan superfoods and growing into your everyday marketplace.";
+  const heroCtaLabel = (hero.cta_label as string | undefined)?.trim() || "Shop Now";
+  const heroCtaHref = (hero.cta_href as string | undefined)?.trim() || "/shop";
+  const heroImage = (hero.image_url as string | undefined)?.trim();
+
   return (
     <div>
       <section className="relative overflow-hidden bg-surface border-b border-border">
         <div className="container-page grid gap-10 py-12 md:py-20 lg:grid-cols-2 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Sparkles className="h-3.5 w-3.5" /> Pakistan's Smart Shopping Marketplace
+              <Sparkles className="h-3.5 w-3.5" /> {heroEyebrow}
             </div>
-            <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] text-foreground">
-              Quality products.<br />
-              <span className="text-primary">Smarter prices.</span><br />
-              Everyday savings.
-            </h1>
+            {heroTitle ? (
+              <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] text-foreground">
+                {heroTitle}
+              </h1>
+            ) : (
+              <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] text-foreground">
+                Quality products.<br />
+                <span className="text-primary">Smarter prices.</span><br />
+                Everyday savings.
+              </h1>
+            )}
             <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl">
-              BachatAtBazaar.pk brings you carefully selected quality products from across Pakistan and beyond — starting with premium Himalayan superfoods and growing into your everyday marketplace.
+              {heroSubtitle}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/shop" className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-dark transition-colors">
-                Shop Now <ArrowRight className="h-4 w-4" />
-              </Link>
+              <a href={heroCtaHref} className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-dark transition-colors">
+                {heroCtaLabel} <ArrowRight className="h-4 w-4" />
+              </a>
               <Link to="/category/$slug" params={{ slug: firstCat }} className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-6 py-3 text-sm font-semibold hover:bg-accent transition-colors">
                 Explore Himalayan Superfoods
               </Link>
@@ -108,19 +124,26 @@ function Home() {
             </div>
           </div>
           <div className="relative">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-3">
-                <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-buckwheat/700/900" alt="Himalayan buckwheat" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
-                <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-tea/700/700" alt="Buckwheat tea" className="h-full w-full object-cover" /></div>
+            {heroImage ? (
+              <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted">
+                <img src={heroImage} alt="Hero" className="h-full w-full object-cover" />
               </div>
-              <div className="space-y-3 pt-8">
-                <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-mountains/700/700" alt="Gilgit-Baltistan mountains" className="h-full w-full object-cover" /></div>
-                <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-seabuckthorn/700/900" alt="Sea buckthorn" className="h-full w-full object-cover" /></div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-buckwheat/700/900" alt="Himalayan buckwheat" width={700} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-tea/700/700" alt="Buckwheat tea" className="h-full w-full object-cover" /></div>
+                </div>
+                <div className="space-y-3 pt-8">
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-mountains/700/700" alt="Gilgit-Baltistan mountains" className="h-full w-full object-cover" /></div>
+                  <div className="aspect-[4/5] rounded-lg overflow-hidden bg-muted"><img src="https://picsum.photos/seed/hero-seabuckthorn/700/900" alt="Sea buckthorn" className="h-full w-full object-cover" /></div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
+
 
       <section className="container-page py-12 md:py-16">
         <SectionHeading eyebrow="Marketplace" title="Shop by category" description="From premium Himalayan superfoods to everyday essentials." action={<ViewAll to="/shop" />} />

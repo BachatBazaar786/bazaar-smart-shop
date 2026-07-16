@@ -29,6 +29,17 @@ const SECTIONS: { key: string; label: string; description: string; fields: { key
     fields: [{ key: "messages", label: "Messages (one per line)", type: "textarea" }],
   },
   {
+    key: "footer",
+    label: "Footer content",
+    description: "About text and contact info shown in the footer.",
+    fields: [
+      { key: "description", label: "About / description", type: "textarea" },
+      { key: "email", label: "Contact email", type: "text" },
+      { key: "phone", label: "Contact phone", type: "text" },
+      { key: "address", label: "Address", type: "textarea" },
+    ],
+  },
+  {
     key: "about_page",
     label: "About page",
     description: "About Us content.",
@@ -87,6 +98,11 @@ function CmsPage() {
     <div>
       <AdminPageHeader title="Content management" subtitle="Edit site content — no code required." />
       <div className="grid grid-cols-1 gap-4">
+        <NavigationEditor
+          initial={(data.find((d) => d.section_key === "navigation")?.data ?? {}) as { items?: { label: string; href: string }[] }}
+          onSave={(payload) => saveFn({ data: { section_key: "navigation", data: payload } })}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["site-content"] })}
+        />
         {SECTIONS.map((s) => (
           <SectionEditor
             key={s.key}
@@ -100,6 +116,50 @@ function CmsPage() {
     </div>
   );
 }
+
+function NavigationEditor({
+  initial,
+  onSave,
+  onSaved,
+}: {
+  initial: { items?: { label: string; href: string }[] };
+  onSave: (data: { items: { label: string; href: string }[] }) => Promise<unknown>;
+  onSaved: () => void;
+}) {
+  const [items, setItems] = useState<{ label: string; href: string }[]>(initial.items ?? []);
+  useEffect(() => { setItems(initial.items ?? []); }, [initial]);
+  const mut = useMutation({
+    mutationFn: () => onSave({ items }),
+    onSuccess: () => { toast.success("Navigation saved"); onSaved(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <AdminCard
+      title="Header navigation"
+      action={
+        <button onClick={() => mut.mutate()} disabled={mut.isPending} className="rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-sm hover:bg-primary-dark disabled:opacity-60">
+          {mut.isPending ? "Saving…" : "Save"}
+        </button>
+      }
+    >
+      <p className="text-sm text-muted-foreground mb-3">Menu links shown in the top header. Leave empty to use defaults.</p>
+      <div className="space-y-2">
+        {items.map((it, idx) => (
+          <div key={idx} className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-2 items-center">
+            <input value={it.label} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))} placeholder="Label" className="rounded-md border border-border px-3 py-2 text-sm" />
+            <input value={it.href} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, href: e.target.value } : x))} placeholder="/shop or https://…" className="rounded-md border border-border px-3 py-2 text-sm" />
+            <button type="button" onClick={() => setItems(items.map((x, i) => i === idx - 1 ? items[idx] : i === idx ? items[idx - 1] : x))} disabled={idx === 0} className="px-2 py-1 text-xs rounded border border-border disabled:opacity-40">↑</button>
+            <button type="button" onClick={() => setItems(items.map((x, i) => i === idx + 1 ? items[idx] : i === idx ? items[idx + 1] : x))} disabled={idx === items.length - 1} className="px-2 py-1 text-xs rounded border border-border disabled:opacity-40">↓</button>
+            <button type="button" onClick={() => setItems(items.filter((_, i) => i !== idx))} className="px-2 py-1 text-xs rounded border border-border text-destructive">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => setItems([...items, { label: "", href: "" }])} className="mt-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent">+ Add link</button>
+      </div>
+    </AdminCard>
+  );
+}
+
 
 function SectionEditor({
   section,
