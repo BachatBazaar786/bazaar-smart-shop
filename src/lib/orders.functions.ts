@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
 import type { OrderSummary } from "@/types/catalog";
 import { safeError, escapePostgrestLiteral } from "./server-errors";
 import { sendTemplateEmail } from "./email-templates/send-email";
@@ -10,20 +8,6 @@ import { sendTemplateEmail } from "./email-templates/send-email";
 const ADMIN_EMAIL = "bachatatbazaar.pk@gmail.com";
 const SITE_URL = "https://bachatatbazaar.pk";
 const SITE_NAME = "BachatAtBazaar.pk";
-
-function getPublicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    {
-      auth: {
-        storage: undefined,
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    },
-  );
-}
 
 const shippingAddressSchema = z.object({
   full_name: z.string().min(1).max(120),
@@ -105,7 +89,8 @@ export const createOrder = createServerFn({ method: "POST" })
     let couponCode: string | null = null;
     if (data.coupon_code && data.coupon_code.trim()) {
       const code = data.coupon_code.trim().toUpperCase();
-      const { data: vrows, error: vErr } = await supabase.rpc("validate_coupon", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: vrows, error: vErr } = await supabaseAdmin.rpc("validate_coupon", {
         _code: code,
         _subtotal: subtotal,
       });
@@ -157,8 +142,9 @@ export const createOrder = createServerFn({ method: "POST" })
     }
 
     // Atomically decrement stock per line. Roll back the order if any line fails.
+    const { supabaseAdmin: adminForStock } = await import("@/integrations/supabase/client.server");
     for (const li of lineItems) {
-      const { data: ok, error: decErr } = await supabase.rpc(
+      const { data: ok, error: decErr } = await adminForStock.rpc(
         "decrement_product_stock",
         { _product_id: li.product_id, _qty: li.quantity },
       );
@@ -328,8 +314,8 @@ export const trackOrderPublic = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const supabase = getPublicClient();
-    const { data: rows, error } = await supabase.rpc("track_order_public", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("track_order_public", {
       _order_number: data.order_number,
       _email: data.email,
     });
@@ -514,7 +500,8 @@ export const updateOrderStatusAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await requireAdmin(supabase, userId);
-    const { error } = await supabase.rpc("admin_update_order_status", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("admin_update_order_status", {
       _order_id: data.order_id,
       _status: data.status,
       _payment_status: data.payment_status,

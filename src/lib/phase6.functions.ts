@@ -244,8 +244,9 @@ export const validateCoupon = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>
     z.object({ code: z.string().min(2).max(40), subtotal: z.number().nonnegative() }).parse(i),
   )
-  .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase.rpc("validate_coupon", {
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("validate_coupon", {
       _code: data.code,
       _subtotal: data.subtotal,
     });
@@ -442,7 +443,8 @@ export const getAnalyticsExtras = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ days: z.number().int().min(1).max(365).default(30) }).parse(i ?? {}))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: json, error } = await context.supabase.rpc("admin_analytics_extras", { _days: data.days });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: json, error } = await supabaseAdmin.rpc("admin_analytics_extras", { _days: data.days });
     if (error) throw safeError("analytics_extras", error);
     return json as {
       most_viewed: { id: string; name: string; slug: string; views: number }[];

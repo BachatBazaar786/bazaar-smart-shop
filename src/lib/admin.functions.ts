@@ -16,7 +16,8 @@ export const getDashboardStats = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     await requireAdmin(supabase, userId);
-    const { data, error } = await supabase.rpc("admin_dashboard_stats");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_stats");
     if (error) throw safeError("dashboard", error);
     return data as {
       revenue: { total_revenue: number; today_revenue: number; week_revenue: number; month_revenue: number; year_revenue: number };
@@ -386,7 +387,8 @@ export const listCustomersAdmin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: rows, error } = await context.supabase.rpc("admin_list_customers", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("admin_list_customers", {
       _search: data.search,
       _limit: data.limit,
       _offset: 0,
@@ -450,7 +452,8 @@ export const adjustStockAdmin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const { data: stock, error } = await context.supabase.rpc("admin_adjust_stock", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: stock, error } = await supabaseAdmin.rpc("admin_adjust_stock", {
       _product_id: data.product_id,
       _delta: data.delta,
       _reason: data.reason,

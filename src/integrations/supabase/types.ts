@@ -643,18 +643,21 @@ export type Database = {
       page_layouts: {
         Row: {
           data: Json
+          is_published: boolean
           page_key: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           data?: Json
+          is_published?: boolean
           page_key: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           data?: Json
+          is_published?: boolean
           page_key?: string
           updated_at?: string
           updated_by?: string | null
