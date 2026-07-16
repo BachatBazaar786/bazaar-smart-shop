@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { listProducts, listCategories } from "@/lib/catalog.functions";
+import { listBlogPostsPublic } from "@/lib/phase6.functions";
+
 
 const BASE_URL = "https://bazaar-smart-shop.lovable.app";
 
