@@ -57,12 +57,26 @@ function SettingsPage() {
         <AdminCard title="General">
           <Field label="Site name"><input value={v.site_name ?? ""} onChange={(e) => setV({ ...v, site_name: e.target.value })} className="input" /></Field>
           <Field label="Tagline"><input value={v.tagline ?? ""} onChange={(e) => setV({ ...v, tagline: e.target.value })} className="input" /></Field>
-          <Field label="Logo URL"><input value={v.logo_url ?? ""} onChange={(e) => setV({ ...v, logo_url: e.target.value })} className="input" /></Field>
+          <Field label="Logo URL"><input value={v.logo_url ?? ""} onChange={(e) => setV({ ...v, logo_url: e.target.value })} className="input" placeholder="https://…" /></Field>
+          <Field label="Favicon URL"><input value={v.favicon_url ?? ""} onChange={(e) => setV({ ...v, favicon_url: e.target.value })} className="input" placeholder="https://… (32x32 png/ico/svg)" /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Currency"><input value={v.currency ?? "PKR"} onChange={(e) => setV({ ...v, currency: e.target.value })} className="input" /></Field>
             <Field label="Currency symbol"><input value={v.currency_symbol ?? "Rs"} onChange={(e) => setV({ ...v, currency_symbol: e.target.value })} className="input" /></Field>
           </div>
         </AdminCard>
+
+        <AdminCard title="WhatsApp & Notifications">
+          <Field label="WhatsApp number (with country code)">
+            <input value={v.whatsapp_number ?? ""} onChange={(e) => setV({ ...v, whatsapp_number: e.target.value })} className="input" placeholder="+923121007009" />
+          </Field>
+          <Field label="Default WhatsApp message">
+            <input value={v.whatsapp_message ?? ""} onChange={(e) => setV({ ...v, whatsapp_message: e.target.value })} className="input" placeholder="Hi! I have a question about…" />
+          </Field>
+          <Field label="Notifications email (receives new orders, signups, contact form)">
+            <input value={v.notification_email ?? ""} onChange={(e) => setV({ ...v, notification_email: e.target.value })} className="input" placeholder="bachatatbazaar.pk@gmail.com" />
+          </Field>
+        </AdminCard>
+
 
         <AdminCard title="Shipping">
           <Field label="Flat shipping fee (PKR)"><input type="number" value={v.shipping_flat ?? ""} onChange={(e) => setV({ ...v, shipping_flat: e.target.value })} className="input" /></Field>
