@@ -8,6 +8,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading, ViewAll } from "@/components/common/SectionHeading";
 import { useRecentlyViewed } from "@/context/RecentlyViewedContext";
 import { useSiteSection } from "@/context/SiteContext";
+import { PuckPageRenderer } from "@/components/site/PuckPageRenderer";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -82,6 +83,8 @@ function Home() {
 
   return (
     <div>
+      <PuckPageRenderer pageKey="home" />
+
       <section className="relative overflow-hidden bg-surface border-b border-border">
         <div className="container-page grid gap-10 py-12 md:py-20 lg:grid-cols-2 items-center">
           <div>

@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PuckPageRenderer } from "@/components/site/PuckPageRenderer";
 
 const searchSchema = z.object({
   q: z.string().optional(),
