@@ -29,6 +29,17 @@ const SECTIONS: { key: string; label: string; description: string; fields: { key
     fields: [{ key: "messages", label: "Messages (one per line)", type: "textarea" }],
   },
   {
+    key: "footer",
+    label: "Footer content",
+    description: "About text and contact info shown in the footer.",
+    fields: [
+      { key: "description", label: "About / description", type: "textarea" },
+      { key: "email", label: "Contact email", type: "text" },
+      { key: "phone", label: "Contact phone", type: "text" },
+      { key: "address", label: "Address", type: "textarea" },
+    ],
+  },
+  {
     key: "about_page",
     label: "About page",
     description: "About Us content.",
