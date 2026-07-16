@@ -8,7 +8,7 @@ import { formatPKR } from "@/lib/format";
 import { Plus, Copy, Trash2, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/products")({ component: ProductsPage });
+export const Route = createFileRoute("/_authenticated/admin/products/")({ component: ProductsPage });
 
 function ProductsPage() {
   const nav = useNavigate();

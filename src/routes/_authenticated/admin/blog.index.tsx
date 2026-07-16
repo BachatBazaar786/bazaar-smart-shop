@@ -15,7 +15,7 @@ import { Plus, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/blog")({ component: BlogAdmin });
+export const Route = createFileRoute("/_authenticated/admin/blog/")({ component: BlogAdmin });
 
 function BlogAdmin() {
   const qc = useQueryClient();

@@ -8,7 +8,7 @@ import { formatPKR } from "@/lib/format";
 import { Search, Download } from "lucide-react";
 import Papa from "papaparse";
 
-export const Route = createFileRoute("/_authenticated/admin/customers")({ component: CustomersPage });
+export const Route = createFileRoute("/_authenticated/admin/customers/")({ component: CustomersPage });
 
 function CustomersPage() {
   const fn = useServerFn(listCustomersAdmin);
