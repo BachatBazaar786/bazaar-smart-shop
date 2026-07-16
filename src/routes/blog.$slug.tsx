@@ -21,6 +21,7 @@ export const Route = createFileRoute("/blog/$slug")({
     const p = loaderData.post as unknown as {
       title: string; excerpt: string | null; cover_image: string | null;
       seo_title: string | null; seo_description: string | null;
+      published_at: string | null;
     };
     const url = `https://bazaar-smart-shop.lovable.app/blog/${params.slug}`;
     const title = p.seo_title || p.title;
@@ -36,8 +37,26 @@ export const Route = createFileRoute("/blog/$slug")({
         ...(p.cover_image ? [{ property: "og:image", content: p.cover_image }, { name: "twitter:image", content: p.cover_image }] : []),
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: [{
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: p.title,
+          description: desc,
+          ...(p.cover_image ? { image: p.cover_image } : {}),
+          ...(p.published_at ? { datePublished: p.published_at } : {}),
+          mainEntityOfPage: url,
+          publisher: {
+            "@type": "Organization",
+            name: "BachatAtBazaar.pk",
+            logo: { "@type": "ImageObject", url: "https://bazaar-smart-shop.lovable.app/favicon.ico" },
+          },
+        }),
+      }],
     };
   },
+
   notFoundComponent: () => (
     <div className="container-page py-24 text-center">
       <h1 className="font-display text-3xl font-bold">Post not found</h1>

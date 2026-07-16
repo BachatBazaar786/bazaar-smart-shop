@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { listProducts, listCategories } from "@/lib/catalog.functions";
+import { listBlogPostsPublic } from "@/lib/phase6.functions";
+
 
 const BASE_URL = "https://bazaar-smart-shop.lovable.app";
 
@@ -18,17 +20,20 @@ export const Route = createFileRoute("/sitemap.xml")({
         const staticEntries: SitemapEntry[] = [
           { path: "/", changefreq: "daily", priority: "1.0" },
           { path: "/shop", changefreq: "daily", priority: "0.9" },
+          { path: "/blog", changefreq: "weekly", priority: "0.6" },
           { path: "/about", changefreq: "monthly", priority: "0.6" },
           { path: "/contact", changefreq: "monthly", priority: "0.5" },
           { path: "/faqs", changefreq: "monthly", priority: "0.5" },
           { path: "/track-order", changefreq: "yearly", priority: "0.3" },
         ];
 
+
         let dynamic: SitemapEntry[] = [];
         try {
-          const [products, categories] = await Promise.all([
+          const [products, categories, posts] = await Promise.all([
             listProducts({ data: {} }),
             listCategories(),
+            listBlogPostsPublic({ data: { limit: 50 } }),
           ]);
           dynamic = [
             ...categories.map((c) => ({
@@ -41,8 +46,15 @@ export const Route = createFileRoute("/sitemap.xml")({
               changefreq: "weekly" as const,
               priority: "0.8",
             })),
+            ...posts.map((p) => ({
+              path: `/blog/${p.slug}`,
+              lastmod: p.published_at ?? undefined,
+              changefreq: "monthly" as const,
+              priority: "0.6",
+            })),
           ];
         } catch {
+
           // If the DB is unreachable at request time, still serve the static entries.
         }
 
