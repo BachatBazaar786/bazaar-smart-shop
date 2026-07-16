@@ -30,9 +30,10 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         let dynamic: SitemapEntry[] = [];
         try {
-          const [products, categories] = await Promise.all([
+          const [products, categories, posts] = await Promise.all([
             listProducts({ data: {} }),
             listCategories(),
+            listBlogPostsPublic({ data: { limit: 50 } }),
           ]);
           dynamic = [
             ...categories.map((c) => ({
@@ -45,8 +46,15 @@ export const Route = createFileRoute("/sitemap.xml")({
               changefreq: "weekly" as const,
               priority: "0.8",
             })),
+            ...posts.map((p) => ({
+              path: `/blog/${p.slug}`,
+              lastmod: p.published_at ?? undefined,
+              changefreq: "monthly" as const,
+              priority: "0.6",
+            })),
           ];
         } catch {
+
           // If the DB is unreachable at request time, still serve the static entries.
         }
 
