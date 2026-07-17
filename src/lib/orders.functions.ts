@@ -629,3 +629,21 @@ export const isCurrentUserAdmin = createServerFn({ method: "GET" })
     if (error) throw safeError("orders", error, "Unable to check admin access.");
     return (data?.length ?? 0) > 0;
   });
+
+export const deleteOrdersAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ order_ids: z.array(z.string().uuid()).min(1).max(200) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Delete children first to satisfy FKs, then the orders themselves.
+    await supabaseAdmin.from("coupon_redemptions").delete().in("order_id", data.order_ids);
+    await supabaseAdmin.from("order_status_history").delete().in("order_id", data.order_ids);
+    await supabaseAdmin.from("order_items").delete().in("order_id", data.order_ids);
+    const { error } = await supabaseAdmin.from("orders").delete().in("id", data.order_ids);
+    if (error) throw safeError("orders_delete", error, "Failed to delete orders.");
+    return { ok: true, deleted: data.order_ids.length };
+  });
