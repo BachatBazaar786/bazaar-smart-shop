@@ -625,3 +625,54 @@ function CheckoutPage() {
     </div>
   );
 }
+
+function PaymentDetailLine({ line }: { line: string }) {
+  const [copied, setCopied] = useState(false);
+  const colonIdx = line.indexOf(":");
+  const hasPair = colonIdx > 0 && colonIdx < line.length - 1;
+  const label = hasPair ? line.slice(0, colonIdx).trim() : "";
+  const value = hasPair ? line.slice(colonIdx + 1).trim() : line.trim();
+
+  const copyable =
+    hasPair &&
+    value &&
+    value !== "Not configured" &&
+    !/^abdullah akhtar$/i.test(value);
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      toast.success(`${label || "Value"} copied`);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy. Please copy manually.");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0 break-words">
+        {hasPair ? (
+          <>
+            <span className="text-muted-foreground">{label}:</span>{" "}
+            <span className="font-semibold">{value}</span>
+          </>
+        ) : (
+          <span>{line}</span>
+        )}
+      </div>
+      {copyable && (
+        <button
+          type="button"
+          onClick={onCopy}
+          className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-sans hover:bg-accent"
+          aria-label={`Copy ${label}`}
+        >
+          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      )}
+    </div>
+  );
+}
