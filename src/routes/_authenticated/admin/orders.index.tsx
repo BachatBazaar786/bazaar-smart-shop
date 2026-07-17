@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listOrdersAdmin } from "@/lib/orders.functions";
+import { listOrdersAdmin, deleteOrdersAdmin } from "@/lib/orders.functions";
 import { AdminPageHeader } from "@/components/admin/AdminUI";
 import { formatPKR } from "@/lib/format";
-import { Search, Download } from "lucide-react";
+import { Search, Download, Trash2 } from "lucide-react";
 import Papa from "papaparse";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({ component: OrdersPage });
 
@@ -15,13 +16,52 @@ const PAY = ["unpaid", "awaiting_verification", "paid", "failed", "refunded"] as
 
 function OrdersPage() {
   const fn = useServerFn(listOrdersAdmin);
+  const del = useServerFn(deleteOrdersAdmin);
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
   const [pay, setPay] = useState<string>("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-orders", search, status, pay],
     queryFn: () => fn({ data: { search, status: (status || undefined) as never, payment_status: (pay || undefined) as never, limit: 200 } }),
   });
+
+  const allIds = useMemo(() => data.map((o) => o.id), [data]);
+  const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id));
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(allIds));
+  };
+
+  const delMut = useMutation({
+    mutationFn: (ids: string[]) => del({ data: { order_ids: ids } }),
+    onSuccess: (r) => {
+      toast.success(`Deleted ${r.deleted} order${r.deleted === 1 ? "" : "s"}`);
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bulkDelete = () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (!confirm(`Permanently delete ${ids.length} order${ids.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+    delMut.mutate(ids);
+  };
+  const deleteOne = (id: string, orderNumber: string) => {
+    if (!confirm(`Permanently delete order ${orderNumber}? This cannot be undone.`)) return;
+    delMut.mutate([id]);
+  };
 
   const exportCSV = () => {
     const csv = Papa.unparse(data.map((o) => ({
@@ -40,8 +80,21 @@ function OrdersPage() {
     <div>
       <AdminPageHeader
         title="Orders"
-        subtitle={`${data.length} order${data.length === 1 ? "" : "s"}`}
-        actions={<button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-accent"><Download className="h-4 w-4" /> Export CSV</button>}
+        subtitle={`${data.length} order${data.length === 1 ? "" : "s"}${selected.size > 0 ? ` · ${selected.size} selected` : ""}`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {selected.size > 0 && (
+              <button
+                onClick={bulkDelete}
+                disabled={delMut.isPending}
+                className="inline-flex items-center gap-2 rounded-md bg-destructive text-destructive-foreground px-3 py-2 text-sm hover:opacity-90 disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" /> Delete selected ({selected.size})
+              </button>
+            )}
+            <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-accent"><Download className="h-4 w-4" /> Export CSV</button>
+          </div>
+        }
       />
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -64,6 +117,7 @@ function OrdersPage() {
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase text-muted-foreground bg-muted/50">
               <tr>
+                <th className="px-3 py-2.5 w-8"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" /></th>
                 <th className="px-3 py-2.5">Order</th>
                 <th className="px-3 py-2.5">Customer</th>
                 <th className="px-3 py-2.5">Status</th>
@@ -71,13 +125,15 @@ function OrdersPage() {
                 <th className="px-3 py-2.5">Items</th>
                 <th className="px-3 py-2.5 text-right">Total</th>
                 <th className="px-3 py-2.5">Date</th>
+                <th className="px-3 py-2.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {isLoading && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Loading…</td></tr>}
-              {!isLoading && data.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">No orders found.</td></tr>}
+              {isLoading && <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">Loading…</td></tr>}
+              {!isLoading && data.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">No orders found.</td></tr>}
               {data.map((o) => (
                 <tr key={o.id} className="border-t border-border/50 hover:bg-muted/40">
+                  <td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(o.id)} onChange={() => toggle(o.id)} aria-label={`Select ${o.order_number}`} /></td>
                   <td className="px-3 py-2.5">
                     <Link to="/admin/orders/$id" params={{ id: o.order_number }} className="font-medium text-primary hover:underline">{o.order_number}</Link>
                   </td>
@@ -90,6 +146,16 @@ function OrdersPage() {
                   <td className="px-3 py-2.5">{o.item_count}</td>
                   <td className="px-3 py-2.5 text-right font-medium">{formatPKR(o.total)}</td>
                   <td className="px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap">{new Date(o.created_at).toLocaleDateString()}</td>
+                  <td className="px-3 py-2.5 text-right">
+                    <button
+                      onClick={() => deleteOne(o.id, o.order_number)}
+                      disabled={delMut.isPending}
+                      className="p-1.5 hover:bg-destructive/10 text-destructive rounded disabled:opacity-40"
+                      title="Delete order"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
