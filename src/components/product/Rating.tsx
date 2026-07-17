@@ -12,7 +12,7 @@ export function Rating({ value, count, showCount = true, size = 14 }: { value: n
               key={i}
               width={size}
               height={size}
-              className={filled ? "fill-savings text-savings" : half ? "fill-savings/50 text-savings" : "text-muted-foreground/40"}
+              className={filled ? "fill-savings text-savings" : half ? "fill-savings/50 text-savings" : "text-muted-foreground/70"}
             />
           );
         })}
