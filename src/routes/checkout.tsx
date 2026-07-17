@@ -213,7 +213,7 @@ function CheckoutPage() {
         payment_method: payment,
         notes: String(form.get("notes") ?? ""),
         coupon_code: applied?.code ?? null,
-        payment_reference: payment !== "cod" ? paymentReference.trim() : null,
+        payment_reference: null,
         payment_proof_url: payment !== "cod" ? uploadedPath : null,
       },
     });
