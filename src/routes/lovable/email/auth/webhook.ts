@@ -10,7 +10,7 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
 const SITE_NAME = "bazaar-smart-shop"
-const SENDER_DOMAIN = "notify.bachatatbazaar.pk"
+const SENDER_DOMAIN = "notify.mail.bachatatbazaar.pk"
 const ROOT_DOMAIN = "bachatatbazaar.pk"
 const FROM_DOMAIN = "bachatatbazaar.pk"
 const SITE_URL = `https://${ROOT_DOMAIN}`
