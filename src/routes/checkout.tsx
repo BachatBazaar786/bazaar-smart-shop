@@ -443,11 +443,27 @@ function CheckoutPage() {
                   {payment === "jazzcash" && "JazzCash details"}
                   {payment === "easypaisa" && "EasyPaisa details"}
                 </div>
-                <pre className="mt-3 whitespace-pre-wrap break-words text-sm font-mono bg-background/60 rounded p-3 border border-border">
-                  {payment === "bank_transfer" && (settings.bank_details?.trim() || "Bank details will be shared soon.")}
-                  {payment === "jazzcash" && `Account Title: Abdullah Akhtar\nJazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`}
-                  {payment === "easypaisa" && `Account Title: Abdullah Akhtar\nEasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`}
-                </pre>
+                <div className="mt-3 text-sm font-mono bg-background/60 rounded p-3 border border-border space-y-1.5">
+                  {payment === "bank_transfer" && (
+                    settings.bank_details?.trim()
+                      ? settings.bank_details.trim().split("\n").map((line, idx) => (
+                          <PaymentDetailLine key={idx} line={line} />
+                        ))
+                      : <div className="text-muted-foreground">Bank details will be shared soon.</div>
+                  )}
+                  {payment === "jazzcash" && (
+                    <>
+                      <PaymentDetailLine line="Account Title: Abdullah Akhtar" />
+                      <PaymentDetailLine line={`JazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`} />
+                    </>
+                  )}
+                  {payment === "easypaisa" && (
+                    <>
+                      <PaymentDetailLine line="Account Title: Abdullah Akhtar" />
+                      <PaymentDetailLine line={`EasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`} />
+                    </>
+                  )}
+                </div>
                 <p className="mt-3 text-xs text-muted-foreground">
                   Transfer the exact total amount, then upload the receipt below.
                 </p>
