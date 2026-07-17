@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listProductsAdmin, deleteProductAdmin, duplicateProductAdmin, listCategoriesAdmin, listBrandsAdmin } from "@/lib/admin.functions";
 import { AdminPageHeader } from "@/components/admin/AdminUI";
 import { formatPKR } from "@/lib/format";
-import { Plus, Copy, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Copy, Trash2, Pencil, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({ component: ProductsPage });
@@ -46,7 +46,12 @@ function ProductsPage() {
       <AdminPageHeader
         title="Products"
         subtitle={`${data.length} product${data.length === 1 ? "" : "s"}`}
-        actions={<Link to="/admin/products/new" className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover:bg-primary-dark"><Plus className="h-4 w-4" /> New product</Link>}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/admin/products/import" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Import CSV</Link>
+            <Link to="/admin/products/new" className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover:bg-primary-dark"><Plus className="h-4 w-4" /> New product</Link>
+          </div>
+        }
       />
 
       <div className="flex flex-wrap gap-2 mb-4">

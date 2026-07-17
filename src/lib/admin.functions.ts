@@ -243,6 +243,105 @@ export const duplicateProductAdmin = createServerFn({ method: "POST" })
     return { id: newId };
   });
 
+// =============== Bulk Import ===============
+const bulkImportRow = z.object({
+  name: z.string().min(1).max(200),
+  slug: z.string().min(1).max(200).optional(),
+  sku: z.string().min(1).max(80).optional(),
+  short_description: z.string().max(500).optional().nullable(),
+  description: z.string().max(20000).optional().nullable(),
+  price: z.number().nonnegative().max(10_000_000),
+  sale_price: z.number().nonnegative().max(10_000_000).nullable().optional(),
+  stock: z.number().int().min(0).max(1_000_000).default(0),
+  category_slug: z.string().max(200).optional().nullable(),
+  brand_slug: z.string().max(200).optional().nullable(),
+  status: z.enum(["draft", "active", "archived"]).default("active"),
+  featured: z.boolean().optional().default(false),
+  image_url: z.string().url().max(2000).optional().nullable(),
+});
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 200) || "product";
+}
+
+export const bulkImportProductsAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      rows: z.array(z.record(z.string(), z.unknown())).min(1).max(1000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Preload categories & brands for slug lookup
+    const [{ data: cats }, { data: brands }] = await Promise.all([
+      supabaseAdmin.from("categories").select("id, slug"),
+      supabaseAdmin.from("brands").select("id, slug"),
+    ]);
+    const catMap = new Map((cats ?? []).map((c: { id: string; slug: string }) => [c.slug, c.id]));
+    const brandMap = new Map((brands ?? []).map((b: { id: string; slug: string }) => [b.slug, b.id]));
+
+    let created = 0;
+    const errors: { row: number; error: string }[] = [];
+
+    for (let i = 0; i < data.rows.length; i++) {
+      const raw = data.rows[i] as Record<string, unknown>;
+      // Coerce numeric fields
+      const coerced = {
+        ...raw,
+        price: raw.price !== undefined && raw.price !== "" ? Number(raw.price) : undefined,
+        sale_price: raw.sale_price !== undefined && raw.sale_price !== "" && raw.sale_price !== null ? Number(raw.sale_price) : null,
+        stock: raw.stock !== undefined && raw.stock !== "" ? Number(raw.stock) : 0,
+        featured: raw.featured === true || raw.featured === "true" || raw.featured === "1" || raw.featured === 1,
+      };
+      const parsed = bulkImportRow.safeParse(coerced);
+      if (!parsed.success) {
+        errors.push({ row: i + 2, error: parsed.error.issues[0]?.message ?? "Invalid row" });
+        continue;
+      }
+      const r = parsed.data;
+      const slug = r.slug ? slugify(r.slug) : slugify(r.name);
+      const sku = r.sku ?? `SKU-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const category_id = r.category_slug ? (catMap.get(r.category_slug) ?? null) : null;
+      const brand_id = r.brand_slug ? (brandMap.get(r.brand_slug) ?? null) : null;
+
+      const { data: ins, error: insErr } = await supabaseAdmin
+        .from("products")
+        .insert({
+          name: r.name,
+          slug,
+          sku,
+          short_description: r.short_description ?? null,
+          description: r.description ?? null,
+          price: r.price,
+          sale_price: r.sale_price ?? null,
+          stock: r.stock,
+          category_id,
+          brand_id,
+          status: r.status,
+          featured: r.featured,
+        } as never)
+        .select("id")
+        .single();
+      if (insErr || !ins) {
+        errors.push({ row: i + 2, error: insErr?.message ?? "Insert failed" });
+        continue;
+      }
+      if (r.image_url) {
+        await supabaseAdmin.from("product_images").insert({
+          product_id: (ins as { id: string }).id,
+          url: r.image_url,
+          alt: r.name,
+          sort_order: 0,
+        } as never);
+      }
+      created++;
+    }
+    return { created, failed: errors.length, errors: errors.slice(0, 50) };
+  });
+
 // =============== Categories ===============
 const categorySchema = z.object({
   id: z.string().uuid().optional(),
