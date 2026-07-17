@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { OrderSummary } from "@/types/catalog";
@@ -37,15 +38,32 @@ const createOrderInput = z.object({
   coupon_code: z.string().max(40).optional().nullable(),
 });
 
+async function getOptionalUserId() {
+  const authHeader = getRequest()?.headers?.get("authorization") ?? "";
+  if (!authHeader.startsWith("Bearer ")) return null;
+
+  const token = authHeader.replace("Bearer ", "").trim();
+  if (token.split(".").length !== 3) return null;
+
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.auth.getClaims(token);
+    if (error || !data?.claims?.sub) return null;
+    return data.claims.sub;
+  } catch {
+    return null;
+  }
+}
+
 
 export const createOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => createOrderInput.parse(input))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await getOptionalUserId();
 
     const productIds = data.items.map((i) => i.product_id);
-    const { data: products, error: prodErr } = await supabase
+    const { data: products, error: prodErr } = await supabaseAdmin
       .from("products")
       .select(
         "id, name, sku, price, sale_price, stock, status, product_images(url, sort_order)",
@@ -89,7 +107,6 @@ export const createOrder = createServerFn({ method: "POST" })
     let couponCode: string | null = null;
     if (data.coupon_code && data.coupon_code.trim()) {
       const code = data.coupon_code.trim().toUpperCase();
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: vrows, error: vErr } = await supabaseAdmin.rpc("validate_coupon", {
         _code: code,
         _subtotal: subtotal,
@@ -106,7 +123,7 @@ export const createOrder = createServerFn({ method: "POST" })
 
     const total = Math.max(0, subtotal - discount) + shipping;
 
-    const { data: order, error: orderErr } = await supabase
+    const { data: order, error: orderErr } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: userId,
@@ -133,30 +150,29 @@ export const createOrder = createServerFn({ method: "POST" })
 
     if (orderErr || !order) throw safeError("orders", orderErr, "Failed to create order.");
 
-    const { error: itemsErr } = await supabase
+    const { error: itemsErr } = await supabaseAdmin
       .from("order_items")
       .insert(lineItems.map((li) => ({ ...li, order_id: order.id })));
     if (itemsErr) {
-      await supabase.from("orders").delete().eq("id", order.id);
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
       throw safeError("orders", itemsErr);
     }
 
     // Atomically decrement stock per line. Roll back the order if any line fails.
-    const { supabaseAdmin: adminForStock } = await import("@/integrations/supabase/client.server");
     for (const li of lineItems) {
-      const { data: ok, error: decErr } = await adminForStock.rpc(
+      const { data: ok, error: decErr } = await supabaseAdmin.rpc(
         "decrement_product_stock",
         { _product_id: li.product_id, _qty: li.quantity },
       );
       if (decErr || ok !== true) {
-        await supabase.from("orders").delete().eq("id", order.id);
+        await supabaseAdmin.from("orders").delete().eq("id", order.id);
         throw new Error(
           `Sorry, "${li.name_snapshot}" just went out of stock. Please try again.`,
         );
       }
     }
 
-    await supabase.from("order_status_history").insert({
+    await supabaseAdmin.from("order_status_history").insert({
       order_id: order.id,
       status: "pending",
       note: "Order placed by customer",
@@ -164,18 +180,18 @@ export const createOrder = createServerFn({ method: "POST" })
     } as never);
 
     if (couponId) {
-      await supabase.from("coupon_redemptions").insert({
+      await supabaseAdmin.from("coupon_redemptions").insert({
         coupon_id: couponId,
         order_id: order.id,
         user_id: userId,
-        discount,
+        amount: discount,
       } as never);
     }
 
     // Fetch logo for branded email (best-effort; never blocks order success).
     let logoUrl: string | undefined
     try {
-      const { data: settings } = await supabase
+      const { data: settings } = await supabaseAdmin
         .from("site_settings")
         .select("data")
         .eq("id", true as never)

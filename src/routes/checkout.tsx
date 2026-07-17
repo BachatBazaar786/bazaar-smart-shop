@@ -14,7 +14,7 @@ import { formatPKR } from "@/lib/format";
 import { createOrder } from "@/lib/orders.functions";
 import { validateCoupon } from "@/lib/phase6.functions";
 import { listMyAddresses } from "@/lib/profile.functions";
-import { Lock, Loader2, Tag, X } from "lucide-react";
+import { Loader2, ShoppingBag, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -76,16 +76,6 @@ function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate({
-        to: "/auth",
-        search: { redirect: "/checkout" },
-        replace: true,
-      });
-    }
-  }, [authLoading, isAuthenticated, navigate]);
-
-  useEffect(() => {
     const list = addresses.data;
     if (list && list.length > 0 && selectedAddressId === "new") {
       const def = list.find((a) => a.is_default) ?? list[0];
@@ -115,7 +105,7 @@ function CheckoutPage() {
     );
   }
 
-  if (authLoading || !isAuthenticated) {
+  if (authLoading) {
     return (
       <div className="container-page py-24 grid place-items-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -177,7 +167,25 @@ function CheckoutPage() {
       <Breadcrumbs
         items={[{ label: "Cart", to: "/cart" }, { label: "Checkout" }]}
       />
-      <h1 className="font-display text-3xl md:text-4xl font-bold">Checkout</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold">Checkout</h1>
+          {!isAuthenticated && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              You can place your order as a guest. Sign in only if you want to save addresses.
+            </p>
+          )}
+        </div>
+        {!isAuthenticated && (
+          <Link
+            to="/auth"
+            search={{ redirect: "/checkout" }}
+            className="text-sm font-semibold text-primary hover:text-primary-dark"
+          >
+            Sign in for saved addresses
+          </Link>
+        )}
+      </div>
 
       <form
         onSubmit={onSubmit}
@@ -464,7 +472,7 @@ function CheckoutPage() {
               </>
             ) : (
               <>
-                <Lock className="h-4 w-4 mr-2" /> Place order ·{" "}
+                <ShoppingBag className="h-4 w-4 mr-2" /> Place order ·{" "}
                 {formatPKR(total)}
               </>
             )}

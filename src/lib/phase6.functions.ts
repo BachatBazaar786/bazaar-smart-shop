@@ -240,7 +240,6 @@ export const deleteCouponAdmin = createServerFn({ method: "POST" })
 // COUPONS — customer validate
 // ================================================================
 export const validateCoupon = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
     z.object({ code: z.string().min(2).max(40), subtotal: z.number().nonnegative() }).parse(i),
   )
