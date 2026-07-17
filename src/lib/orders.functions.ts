@@ -214,7 +214,11 @@ export const createOrder = createServerFn({ method: "POST" })
         .eq("id", true as never)
         .maybeSingle();
       const d = (settings?.data ?? {}) as Record<string, any>;
-      if (typeof d.logo_url === "string") logoUrl = d.logo_url;
+      if (typeof d.logo_url === "string" && d.logo_url) {
+        logoUrl = d.logo_url.startsWith("http")
+          ? d.logo_url
+          : `${SITE_URL}${d.logo_url.startsWith("/") ? "" : "/"}${d.logo_url}`;
+      }
     } catch {}
 
     const emailPayload = {
