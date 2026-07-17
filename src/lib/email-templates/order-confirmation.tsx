@@ -102,9 +102,9 @@ export const OrderConfirmationEmail = ({
             <Img
               src={logoUrl}
               alt={siteName}
-              width="72"
-              height="72"
-              style={{ borderRadius: '10px', margin: '0 auto' }}
+              width="200"
+              height="60"
+              style={{ margin: '0 auto', objectFit: 'contain' }}
             />
           ) : null}
           <Heading style={h1}>
