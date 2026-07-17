@@ -11,13 +11,13 @@ const SITE_URL = "https://bachatatbazaar.pk";
 const SITE_NAME = "BachatAtBazaar.pk";
 
 const shippingAddressSchema = z.object({
-  full_name: z.string().min(1).max(120),
-  phone: z.string().min(6).max(30),
-  email: z.string().email(),
-  line1: z.string().min(1).max(200),
+  full_name: z.string().min(2, { message: "Please enter your full name." }).max(120),
+  phone: z.string().min(6, { message: "Please enter a valid phone number (at least 6 digits)." }).max(30),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  line1: z.string().min(3, { message: "Please enter your street address." }).max(200),
   line2: z.string().max(200).optional().default(""),
-  city: z.string().min(1).max(100),
-  province: z.string().min(1).max(100),
+  city: z.string().min(1, { message: "City is required." }).max(100),
+  province: z.string().min(1, { message: "Province is required." }).max(100),
   postal_code: z.string().max(20).optional().default(""),
   country: z.string().default("Pakistan"),
 });
@@ -30,13 +30,33 @@ const createOrderInput = z.object({
         quantity: z.number().int().min(1).max(50),
       }),
     )
-    .min(1)
+    .min(1, { message: "Your cart is empty." })
     .max(30),
   shipping_address: shippingAddressSchema,
   payment_method: z.enum(["cod", "bank_transfer", "jazzcash", "easypaisa"]),
   notes: z.string().max(1000).optional().default(""),
   coupon_code: z.string().max(40).optional().nullable(),
+  payment_reference: z.string().max(120).optional().nullable(),
+  payment_proof_url: z.string().max(1024).optional().nullable(),
+}).superRefine((val, ctx) => {
+  if (val.payment_method !== "cod" && !val.payment_reference?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["payment_reference"],
+      message: "Please enter your payment transaction ID / reference.",
+    });
+  }
 });
+
+function parseOrderInput(input: unknown) {
+  const result = createOrderInput.safeParse(input);
+  if (!result.success) {
+    const first = result.error.issues[0];
+    throw new Error(first?.message ?? "Please check your details and try again.");
+  }
+  return result.data;
+}
+
 
 async function getOptionalUserId() {
   const authHeader = getRequest()?.headers?.get("authorization") ?? "";
@@ -57,7 +77,8 @@ async function getOptionalUserId() {
 
 
 export const createOrder = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => createOrderInput.parse(input))
+  .inputValidator((input: unknown) => parseOrderInput(input))
+
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = await getOptionalUserId();
@@ -130,9 +151,9 @@ export const createOrder = createServerFn({ method: "POST" })
         email: data.shipping_address.email,
         payment_method: data.payment_method,
         payment_status:
-          data.payment_method === "bank_transfer"
-            ? "awaiting_verification"
-            : "unpaid",
+          data.payment_method === "cod"
+            ? "unpaid"
+            : "awaiting_verification",
         status: "pending",
         subtotal,
         shipping,
@@ -143,7 +164,10 @@ export const createOrder = createServerFn({ method: "POST" })
         total,
         shipping_address: data.shipping_address,
         notes: data.notes,
+        payment_reference: data.payment_reference?.trim() || null,
+        payment_proof_url: data.payment_proof_url?.trim() || null,
         order_number: "",
+
       } as never)
       .select("id, order_number")
       .single();
@@ -320,6 +344,61 @@ export const getMyOrder = createServerFn({ method: "GET" })
     };
   });
 
+export const getOrderByEmail = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({
+      order_number: z.string().min(3).max(60),
+      email: z.string().email(),
+    }).parse(input),
+  )
+  .handler(async ({ data }): Promise<OrderSummary | null> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select(
+        "id, order_number, status, payment_status, payment_method, subtotal, shipping, total, email, shipping_address, created_at, order_items(id, name_snapshot, sku_snapshot, image_url, unit_price, quantity, subtotal)",
+      )
+      .eq("order_number", data.order_number)
+      .eq("email", data.email.toLowerCase().trim())
+      .maybeSingle();
+    if (error) throw safeError("orders", error);
+    if (!order) {
+      // try case-insensitive email match
+      const { data: order2 } = await supabaseAdmin
+        .from("orders")
+        .select(
+          "id, order_number, status, payment_status, payment_method, subtotal, shipping, total, email, shipping_address, created_at, order_items(id, name_snapshot, sku_snapshot, image_url, unit_price, quantity, subtotal)",
+        )
+        .eq("order_number", data.order_number)
+        .ilike("email", data.email.trim())
+        .maybeSingle();
+      if (!order2) return null;
+      const o2 = order2 as unknown as {
+        id: string; order_number: string; status: string; payment_status: string; payment_method: string;
+        subtotal: string | number; shipping: string | number; total: string | number; email: string;
+        shipping_address: OrderSummary["shipping_address"]; created_at: string; order_items: OrderSummary["items"];
+      };
+      return {
+        id: o2.id, order_number: o2.order_number, status: o2.status, payment_status: o2.payment_status,
+        payment_method: o2.payment_method, subtotal: Number(o2.subtotal), shipping: Number(o2.shipping),
+        total: Number(o2.total), email: o2.email, shipping_address: o2.shipping_address,
+        created_at: o2.created_at, items: o2.order_items ?? [],
+      };
+    }
+    const o = order as unknown as {
+      id: string; order_number: string; status: string; payment_status: string; payment_method: string;
+      subtotal: string | number; shipping: string | number; total: string | number; email: string;
+      shipping_address: OrderSummary["shipping_address"]; created_at: string; order_items: OrderSummary["items"];
+    };
+    return {
+      id: o.id, order_number: o.order_number, status: o.status, payment_status: o.payment_status,
+      payment_method: o.payment_method, subtotal: Number(o.subtotal), shipping: Number(o.shipping),
+      total: Number(o.total), email: o.email, shipping_address: o.shipping_address,
+      created_at: o.created_at, items: o.order_items ?? [],
+    };
+  });
+
+
 export const trackOrderPublic = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
@@ -450,14 +529,14 @@ export const getOrderAdmin = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ order_number: z.string() }).parse(input),
   )
-  .handler(async ({ data, context }): Promise<(OrderSummary & { notes: string | null; history: { id: string; status: string; note: string | null; created_at: string }[] }) | null> => {
+  .handler(async ({ data, context }): Promise<(OrderSummary & { notes: string | null; payment_reference: string | null; payment_proof_url: string | null; history: { id: string; status: string; note: string | null; created_at: string }[] }) | null> => {
     const { supabase, userId } = context;
     await requireAdmin(supabase, userId);
 
     const { data: order, error } = await supabase
       .from("orders")
       .select(
-        "id, order_number, status, payment_status, payment_method, subtotal, shipping, total, email, shipping_address, notes, created_at, order_items(id, name_snapshot, sku_snapshot, image_url, unit_price, quantity, subtotal), order_status_history(id, status, note, created_at)",
+        "id, order_number, status, payment_status, payment_method, subtotal, shipping, total, email, shipping_address, notes, payment_reference, payment_proof_url, created_at, order_items(id, name_snapshot, sku_snapshot, image_url, unit_price, quantity, subtotal), order_status_history(id, status, note, created_at)",
       )
       .eq("order_number", data.order_number)
       .maybeSingle();
@@ -476,10 +555,24 @@ export const getOrderAdmin = createServerFn({ method: "POST" })
       email: string;
       shipping_address: OrderSummary["shipping_address"];
       notes: string | null;
+      payment_reference: string | null;
+      payment_proof_url: string | null;
       created_at: string;
       order_items: OrderSummary["items"];
       order_status_history: { id: string; status: string; note: string | null; created_at: string }[];
     };
+
+    // Generate signed URL for private payment proof
+    let proofUrl: string | null = null;
+    if (o.payment_proof_url) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: signed } = await supabaseAdmin.storage
+          .from("payment-proofs")
+          .createSignedUrl(o.payment_proof_url, 60 * 60);
+        proofUrl = signed?.signedUrl ?? null;
+      } catch {}
+    }
 
     return {
       id: o.id,
@@ -493,12 +586,15 @@ export const getOrderAdmin = createServerFn({ method: "POST" })
       email: o.email,
       shipping_address: o.shipping_address,
       notes: o.notes,
+      payment_reference: o.payment_reference,
+      payment_proof_url: proofUrl,
       created_at: o.created_at,
       items: o.order_items ?? [],
       history: (o.order_status_history ?? []).sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       ),
     };
+
   });
 
 export const updateOrderStatusAdmin = createServerFn({ method: "POST" })

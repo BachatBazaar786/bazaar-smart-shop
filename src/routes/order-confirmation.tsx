@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Package, Loader2 } from "lucide-react";
 import { formatPKR } from "@/lib/format";
-import { getMyOrder } from "@/lib/orders.functions";
+import { getMyOrder, getOrderByEmail } from "@/lib/orders.functions";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/order-confirmation")({
   head: () => ({
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/order-confirmation")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: z.object({ order: z.string().optional() }),
+  validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
   component: OrderConfirmationPage,
 });
 
@@ -25,14 +26,20 @@ const paymentLabels: Record<string, string> = {
 };
 
 function OrderConfirmationPage() {
-  const { order: orderNumber } = Route.useSearch();
+  const { order: orderNumber, email } = Route.useSearch();
+  const { isAuthenticated } = useAuth();
   const getMyOrderFn = useServerFn(getMyOrder);
+  const getByEmailFn = useServerFn(getOrderByEmail);
 
   const { data: order, isLoading, isError } = useQuery({
-    queryKey: ["order", orderNumber],
-    queryFn: () => getMyOrderFn({ data: { order_number: orderNumber! } }),
-    enabled: !!orderNumber,
+    queryKey: ["order", orderNumber, email, isAuthenticated],
+    queryFn: () =>
+      email
+        ? getByEmailFn({ data: { order_number: orderNumber!, email: email! } })
+        : getMyOrderFn({ data: { order_number: orderNumber! } }),
+    enabled: !!orderNumber && (isAuthenticated || !!email),
   });
+
 
   if (!orderNumber) {
     return (
