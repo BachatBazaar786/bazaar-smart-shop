@@ -45,10 +45,12 @@ function OrderDetailPage() {
   const o = order as {
     id: string; order_number: string; status: string; payment_status: string; payment_method: string;
     subtotal: number; shipping: number; total: number; email: string; notes: string | null; created_at: string;
+    payment_reference: string | null; payment_proof_url: string | null;
     shipping_address: { full_name: string; phone: string; line1: string; line2?: string; city: string; province: string; postal_code?: string; country: string };
     items: { id: string; name_snapshot: string; sku_snapshot: string; image_url: string | null; unit_price: number; quantity: number; subtotal: number }[];
     history: { id: string; status: string; note: string | null; created_at: string }[];
   };
+
 
   return (
     <div>
@@ -140,7 +142,31 @@ function OrderDetailPage() {
 
           <AdminCard title="Payment">
             <div className="text-sm">Method: <span className="font-medium capitalize">{o.payment_method.replace("_", " ")}</span></div>
+            {o.payment_reference && (
+              <div className="text-sm mt-2">
+                <span className="text-muted-foreground">Reference: </span>
+                <span className="font-mono font-medium">{o.payment_reference}</span>
+              </div>
+            )}
+            {o.payment_proof_url && (
+              <div className="mt-3">
+                <a
+                  href={o.payment_proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-accent"
+                >
+                  View payment receipt
+                </a>
+                {o.payment_proof_url.match(/\.(jpe?g|png|webp|gif)/i) && (
+                  <a href={o.payment_proof_url} target="_blank" rel="noopener noreferrer" className="mt-2 block">
+                    <img src={o.payment_proof_url} alt="Payment receipt" className="mt-2 max-h-64 rounded border border-border" />
+                  </a>
+                )}
+              </div>
+            )}
             {o.notes && <div className="text-sm mt-2 text-muted-foreground italic">"{o.notes}"</div>}
+
           </AdminCard>
         </div>
       </div>

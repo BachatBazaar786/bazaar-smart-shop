@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/context/SiteContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +16,10 @@ import { formatPKR } from "@/lib/format";
 import { createOrder } from "@/lib/orders.functions";
 import { validateCoupon } from "@/lib/phase6.functions";
 import { listMyAddresses } from "@/lib/profile.functions";
-import { Loader2, ShoppingBag, Tag, X } from "lucide-react";
+import { Loader2, ShoppingBag, Tag, Upload, X, CheckCircle2, Building2, Wallet } from "lucide-react";
 import { toast } from "sonner";
+
+
 
 
 export const Route = createFileRoute("/checkout")({
@@ -34,10 +38,16 @@ function CheckoutPage() {
   const cart = useCart();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const settings = useSiteSettings();
   const [payment, setPayment] = useState<PaymentMethod>("cod");
   const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new");
   const [couponInput, setCouponInput] = useState("");
   const [applied, setApplied] = useState<{ code: string; discount: number } | null>(null);
+  const [paymentReference, setPaymentReference] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPath, setProofPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
   const validateCouponFn = useServerFn(validateCoupon);
   const applyCoupon = useMutation({
     mutationFn: (code: string) => validateCouponFn({ data: { code, subtotal: cart.subtotal } }),
@@ -65,15 +75,20 @@ function CheckoutPage() {
   const createOrderFn = useServerFn(createOrder);
   const orderMutation = useMutation({
     mutationFn: createOrderFn,
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
+      const v = vars as { data: { shipping_address: { email: string } } };
+      const email = v.data.shipping_address.email;
       cart.clear();
       navigate({
         to: "/order-confirmation",
-        search: { order: res.order_number },
+        search: { order: res.order_number, email },
       });
     },
+
+
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   useEffect(() => {
     const list = addresses.data;
@@ -119,9 +134,50 @@ function CheckoutPage() {
     ? savedAddresses.find((a) => a.id === selectedAddressId)
     : null;
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const uploadProof = async (file: File): Promise<string | null> => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Receipt file must be under 5 MB.");
+      return null;
+    }
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${new Date().getFullYear()}/${crypto.randomUUID()}.${ext}`;
+    setUploading(true);
+    try {
+      const { error } = await supabase.storage
+        .from("payment-proofs")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (error) {
+        toast.error("Failed to upload receipt. Please try again.");
+        return null;
+      }
+      return path;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+
+    // Manual payment methods require reference + proof
+    if (payment !== "cod") {
+      if (!paymentReference.trim()) {
+        toast.error("Please enter your payment transaction ID / reference.");
+        return;
+      }
+      if (!proofFile && !proofPath) {
+        toast.error("Please upload your payment receipt screenshot.");
+        return;
+      }
+    }
+
+    let uploadedPath = proofPath;
+    if (proofFile && !proofPath) {
+      uploadedPath = await uploadProof(proofFile);
+      if (!uploadedPath) return;
+      setProofPath(uploadedPath);
+    }
 
     const shippingAddress = savedAddress
       ? {
@@ -157,10 +213,12 @@ function CheckoutPage() {
         payment_method: payment,
         notes: String(form.get("notes") ?? ""),
         coupon_code: applied?.code ?? null,
-
+        payment_reference: payment !== "cod" ? paymentReference.trim() : null,
+        payment_proof_url: payment !== "cod" ? uploadedPath : null,
       },
     });
   };
+
 
   return (
     <div className="container-page py-8">
@@ -345,8 +403,9 @@ function CheckoutPage() {
                 {
                   id: "bank_transfer" as const,
                   label: "Bank transfer",
-                  desc: "We'll email you our bank details after checkout.",
+                  desc: "Transfer to our bank account. Details shown below after selecting.",
                 },
+
               ].map((opt) => (
                 <label
                   key={opt.id}
@@ -371,8 +430,82 @@ function CheckoutPage() {
                 </label>
               ))}
             </RadioGroup>
+
+            {payment !== "cod" && (
+              <div className="mt-5 rounded-md border border-primary/20 bg-primary/5 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  {payment === "bank_transfer" ? (
+                    <Building2 className="h-4 w-4" />
+                  ) : (
+                    <Wallet className="h-4 w-4" />
+                  )}
+                  {payment === "bank_transfer" && "Bank transfer details"}
+                  {payment === "jazzcash" && "JazzCash details"}
+                  {payment === "easypaisa" && "EasyPaisa details"}
+                </div>
+                <pre className="mt-3 whitespace-pre-wrap break-words text-sm font-mono bg-background/60 rounded p-3 border border-border">
+                  {payment === "bank_transfer" && (settings.bank_details?.trim() || "Bank details will be shared soon.")}
+                  {payment === "jazzcash" && `JazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`}
+                  {payment === "easypaisa" && `EasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`}
+                </pre>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Transfer the exact total amount, then enter your transaction ID and upload the receipt below.
+                </p>
+
+                <div className="mt-4 grid gap-4">
+                  <div>
+                    <Label htmlFor="payment_reference">Transaction ID / Reference *</Label>
+                    <Input
+                      id="payment_reference"
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                      placeholder="e.g. TRX123456789"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="proof">Payment receipt (screenshot) *</Label>
+                    <div className="mt-1 flex items-center gap-3">
+                      <label
+                        htmlFor="proof"
+                        className="inline-flex items-center gap-2 cursor-pointer rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-accent"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {proofFile ? "Change file" : "Choose file"}
+                      </label>
+                      <input
+                        id="proof"
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] ?? null;
+                          setProofFile(f);
+                          setProofPath(null);
+                        }}
+                      />
+                      {proofFile && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[180px]">
+                          {proofFile.name}
+                        </span>
+                      )}
+                      {proofPath && (
+                        <span className="inline-flex items-center gap-1 text-xs text-primary">
+                          <CheckCircle2 className="h-3 w-3" /> Uploaded
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Max 5 MB. Image or PDF.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         </div>
+
+
 
         <aside className="rounded-lg border border-border bg-card p-6 sticky top-24">
           <h2 className="font-display text-lg font-bold">Order summary</h2>
