@@ -9,10 +9,10 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "bazaar-smart-shop"
+const SITE_NAME = "BachatAtBazaar"
 const SENDER_DOMAIN = "notify.mail.bachatatbazaar.pk"
 const ROOT_DOMAIN = "bachatatbazaar.pk"
-const FROM_DOMAIN = "bachatatbazaar.pk"
+const FROM_DOMAIN = "mail.bachatatbazaar.pk"
 const SITE_URL = `https://${ROOT_DOMAIN}`
 
 // The SDK handler owns verification, dispatch, and retry semantics; this file
