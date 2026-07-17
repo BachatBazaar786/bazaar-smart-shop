@@ -38,15 +38,8 @@ const createOrderInput = z.object({
   coupon_code: z.string().max(40).optional().nullable(),
   payment_reference: z.string().max(120).optional().nullable(),
   payment_proof_url: z.string().max(1024).optional().nullable(),
-}).superRefine((val, ctx) => {
-  if (val.payment_method !== "cod" && !val.payment_reference?.trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["payment_reference"],
-      message: "Please enter your payment transaction ID / reference.",
-    });
-  }
 });
+
 
 function parseOrderInput(input: unknown) {
   const result = createOrderInput.safeParse(input);

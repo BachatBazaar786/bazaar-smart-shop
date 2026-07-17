@@ -213,7 +213,7 @@ function CheckoutPage() {
         payment_method: payment,
         notes: String(form.get("notes") ?? ""),
         coupon_code: applied?.code ?? null,
-        payment_reference: payment !== "cod" ? paymentReference.trim() : null,
+        payment_reference: null,
         payment_proof_url: payment !== "cod" ? uploadedPath : null,
       },
     });
@@ -445,24 +445,15 @@ function CheckoutPage() {
                 </div>
                 <pre className="mt-3 whitespace-pre-wrap break-words text-sm font-mono bg-background/60 rounded p-3 border border-border">
                   {payment === "bank_transfer" && (settings.bank_details?.trim() || "Bank details will be shared soon.")}
-                  {payment === "jazzcash" && `JazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`}
-                  {payment === "easypaisa" && `EasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`}
+                  {payment === "jazzcash" && `Account Title: Abdullah Akhtar\nJazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`}
+                  {payment === "easypaisa" && `Account Title: Abdullah Akhtar\nEasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`}
                 </pre>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Transfer the exact total amount, then enter your transaction ID and upload the receipt below.
+                  Transfer the exact total amount, then upload the receipt below.
                 </p>
 
                 <div className="mt-4 grid gap-4">
-                  <div>
-                    <Label htmlFor="payment_reference">Transaction ID / Reference *</Label>
-                    <Input
-                      id="payment_reference"
-                      value={paymentReference}
-                      onChange={(e) => setPaymentReference(e.target.value)}
-                      placeholder="e.g. TRX123456789"
-                      required
-                    />
-                  </div>
+
                   <div>
                     <Label htmlFor="proof">Payment receipt (screenshot) *</Label>
                     <div className="mt-1 flex items-center gap-3">
