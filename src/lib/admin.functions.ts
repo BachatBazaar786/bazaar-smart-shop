@@ -544,6 +544,41 @@ export const setCustomerRoleAdmin = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+async function assertTargetNotSuperAdmin(supabase: any, targetId: string) {
+  const { data } = await supabase.rpc("has_role", { _user_id: targetId, _role: "super_admin" });
+  if (data) throw new Error("Cannot modify a super admin account");
+}
+
+export const setCustomerActiveAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ user_id: z.string().uuid(), active: z.boolean() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    if (data.user_id === context.userId) throw new Error("You cannot deactivate your own account");
+    await assertTargetNotSuperAdmin(context.supabase, data.user_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      ban_duration: data.active ? "none" : "876000h",
+    } as any);
+    if (error) throw safeError("customer_active", error);
+    return { ok: true };
+  });
+
+export const deleteCustomerAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ user_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    if (data.user_id === context.userId) throw new Error("You cannot delete your own account");
+    await assertTargetNotSuperAdmin(context.supabase, data.user_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Detach orders so history is preserved (orders.user_id is nullable for guests)
+    await supabaseAdmin.from("orders").update({ user_id: null }).eq("user_id", data.user_id);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
+    if (error) throw safeError("customer_delete", error);
+    return { ok: true };
+  });
+
 // =============== Inventory ===============
 export const adjustStockAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
