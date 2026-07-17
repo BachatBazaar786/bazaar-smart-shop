@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listProductsAdmin, deleteProductAdmin, duplicateProductAdmin, listCategoriesAdmin, listBrandsAdmin } from "@/lib/admin.functions";
 import { AdminPageHeader } from "@/components/admin/AdminUI";
 import { formatPKR } from "@/lib/format";
-import { Plus, Copy, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Copy, Trash2, Pencil, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({ component: ProductsPage });
