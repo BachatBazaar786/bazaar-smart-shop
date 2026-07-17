@@ -16,7 +16,7 @@ import { formatPKR } from "@/lib/format";
 import { createOrder } from "@/lib/orders.functions";
 import { validateCoupon } from "@/lib/phase6.functions";
 import { listMyAddresses } from "@/lib/profile.functions";
-import { Loader2, ShoppingBag, Tag, Upload, X, CheckCircle2, Building2, Wallet } from "lucide-react";
+import { Loader2, ShoppingBag, Tag, Upload, X, CheckCircle2, Building2, Wallet, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -443,11 +443,27 @@ function CheckoutPage() {
                   {payment === "jazzcash" && "JazzCash details"}
                   {payment === "easypaisa" && "EasyPaisa details"}
                 </div>
-                <pre className="mt-3 whitespace-pre-wrap break-words text-sm font-mono bg-background/60 rounded p-3 border border-border">
-                  {payment === "bank_transfer" && (settings.bank_details?.trim() || "Bank details will be shared soon.")}
-                  {payment === "jazzcash" && `Account Title: Abdullah Akhtar\nJazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`}
-                  {payment === "easypaisa" && `Account Title: Abdullah Akhtar\nEasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`}
-                </pre>
+                <div className="mt-3 text-sm font-mono bg-background/60 rounded p-3 border border-border space-y-1.5">
+                  {payment === "bank_transfer" && (
+                    settings.bank_details?.trim()
+                      ? settings.bank_details.trim().split("\n").map((line, idx) => (
+                          <PaymentDetailLine key={idx} line={line} />
+                        ))
+                      : <div className="text-muted-foreground">Bank details will be shared soon.</div>
+                  )}
+                  {payment === "jazzcash" && (
+                    <>
+                      <PaymentDetailLine line="Account Title: Abdullah Akhtar" />
+                      <PaymentDetailLine line={`JazzCash Number: ${settings.jazzcash?.trim() || "Not configured"}`} />
+                    </>
+                  )}
+                  {payment === "easypaisa" && (
+                    <>
+                      <PaymentDetailLine line="Account Title: Abdullah Akhtar" />
+                      <PaymentDetailLine line={`EasyPaisa Number: ${settings.easypaisa?.trim() || "Not configured"}`} />
+                    </>
+                  )}
+                </div>
                 <p className="mt-3 text-xs text-muted-foreground">
                   Transfer the exact total amount, then upload the receipt below.
                 </p>
@@ -606,6 +622,57 @@ function CheckoutPage() {
           </p>
         </aside>
       </form>
+    </div>
+  );
+}
+
+function PaymentDetailLine({ line }: { line: string }) {
+  const [copied, setCopied] = useState(false);
+  const colonIdx = line.indexOf(":");
+  const hasPair = colonIdx > 0 && colonIdx < line.length - 1;
+  const label = hasPair ? line.slice(0, colonIdx).trim() : "";
+  const value = hasPair ? line.slice(colonIdx + 1).trim() : line.trim();
+
+  const copyable =
+    hasPair &&
+    value &&
+    value !== "Not configured" &&
+    !/^abdullah akhtar$/i.test(value);
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      toast.success(`${label || "Value"} copied`);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy. Please copy manually.");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0 break-words">
+        {hasPair ? (
+          <>
+            <span className="text-muted-foreground">{label}:</span>{" "}
+            <span className="font-semibold">{value}</span>
+          </>
+        ) : (
+          <span>{line}</span>
+        )}
+      </div>
+      {copyable && (
+        <button
+          type="button"
+          onClick={onCopy}
+          className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-sans hover:bg-accent"
+          aria-label={`Copy ${label}`}
+        >
+          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      )}
     </div>
   );
 }
