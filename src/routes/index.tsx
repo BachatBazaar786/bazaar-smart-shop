@@ -138,7 +138,7 @@ function Home() {
           <div className="relative">
             {heroImage ? (
               <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted">
-                <img src={heroImage} alt="Himalayan buckwheat fields under snow-capped peaks in Gilgit-Baltistan" className="h-full w-full object-cover" />
+                <img src={heroImage} alt="Himalayan buckwheat fields under snow-capped peaks in Gilgit-Baltistan" width={1200} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
