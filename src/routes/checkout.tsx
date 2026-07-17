@@ -16,7 +16,7 @@ import { formatPKR } from "@/lib/format";
 import { createOrder } from "@/lib/orders.functions";
 import { validateCoupon } from "@/lib/phase6.functions";
 import { listMyAddresses } from "@/lib/profile.functions";
-import { Loader2, ShoppingBag, Tag, Upload, X, CheckCircle2, Building2, Wallet } from "lucide-react";
+import { Loader2, ShoppingBag, Tag, Upload, X, CheckCircle2, Building2, Wallet, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 
