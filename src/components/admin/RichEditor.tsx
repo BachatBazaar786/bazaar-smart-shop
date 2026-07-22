@@ -17,7 +17,9 @@ export function RichEditor({
   minHeight?: number;
 }) {
   const [local, setLocal] = useState(value ?? "");
-  useEffect(() => { setLocal(value ?? ""); }, [value]);
+  useEffect(() => {
+    setLocal((prev) => ((value ?? "") === prev ? prev : (value ?? "")));
+  }, [value]);
 
   return (
     <div
