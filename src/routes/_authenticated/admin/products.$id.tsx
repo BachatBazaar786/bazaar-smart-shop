@@ -161,14 +161,13 @@ function ProductEditor() {
                 <RichEditor value={f.usage} onChange={(v) => setF({ ...f, usage: v })} minHeight={120} />
               </Field>
               <Field label="Benefits">
-                <RichEditor
-                  value={benefitsToHtml(f.benefits)}
-                  onChange={(html) => setF({ ...f, benefits: htmlToBenefits(html) })}
-                  minHeight={120}
-                  placeholder="Add each benefit as a bullet or new line"
+                <BenefitsEditor
+                  benefits={f.benefits}
+                  onChange={(list) => setF({ ...f, benefits: list })}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Each bullet/line becomes a separate benefit chip.</p>
               </Field>
+
             </div>
           </AdminCard>
 
@@ -304,3 +303,30 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
     </label>
   );
 }
+
+function BenefitsEditor({ benefits, onChange }: { benefits: string[]; onChange: (list: string[]) => void }) {
+  // Keep HTML as internal state so typing doesn't get re-serialized every keystroke.
+  const [html, setHtml] = useState(() => benefitsToHtml(benefits));
+  // Sync from parent only when the parent's list changes to something we didn't produce.
+  useEffect(() => {
+    const incoming = benefitsToHtml(benefits);
+    setHtml((prev) => {
+      const prevList = htmlToBenefits(prev).join("\u0001");
+      const nextList = benefits.join("\u0001");
+      return prevList === nextList ? prev : incoming;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [benefits]);
+  return (
+    <RichEditor
+      value={html}
+      onChange={(next) => {
+        setHtml(next);
+        onChange(htmlToBenefits(next));
+      }}
+      minHeight={120}
+      placeholder="Add each benefit as a bullet or new line"
+    />
+  );
+}
+
