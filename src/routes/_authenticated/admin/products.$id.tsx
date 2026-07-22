@@ -161,14 +161,13 @@ function ProductEditor() {
                 <RichEditor value={f.usage} onChange={(v) => setF({ ...f, usage: v })} minHeight={120} />
               </Field>
               <Field label="Benefits">
-                <RichEditor
-                  value={benefitsToHtml(f.benefits)}
-                  onChange={(html) => setF({ ...f, benefits: htmlToBenefits(html) })}
-                  minHeight={120}
-                  placeholder="Add each benefit as a bullet or new line"
+                <BenefitsEditor
+                  benefits={f.benefits}
+                  onChange={(list) => setF({ ...f, benefits: list })}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Each bullet/line becomes a separate benefit chip.</p>
               </Field>
+
             </div>
           </AdminCard>
 
