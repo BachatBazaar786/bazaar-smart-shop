@@ -303,3 +303,30 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
     </label>
   );
 }
+
+function BenefitsEditor({ benefits, onChange }: { benefits: string[]; onChange: (list: string[]) => void }) {
+  // Keep HTML as internal state so typing doesn't get re-serialized every keystroke.
+  const [html, setHtml] = useState(() => benefitsToHtml(benefits));
+  // Sync from parent only when the parent's list changes to something we didn't produce.
+  useEffect(() => {
+    const incoming = benefitsToHtml(benefits);
+    setHtml((prev) => {
+      const prevList = htmlToBenefits(prev).join("\u0001");
+      const nextList = benefits.join("\u0001");
+      return prevList === nextList ? prev : incoming;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [benefits]);
+  return (
+    <RichEditor
+      value={html}
+      onChange={(next) => {
+        setHtml(next);
+        onChange(htmlToBenefits(next));
+      }}
+      minHeight={120}
+      placeholder="Add each benefit as a bullet or new line"
+    />
+  );
+}
+
